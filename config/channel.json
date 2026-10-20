@@ -1,0 +1,25 @@
+{
+ "name": "痞子葳 PZ 遊戲頻道",
+ "note": "頻道設定：路線、預設權重、製作天數。App 的「方向」頁可以覆寫權重與路線倍率（存在手機，或用遙控鑰匙同步）。",
+ "lead_days": 3,
+ "weights": {"demand": 40, "timing": 25, "fit": 20, "ease": 15},
+ "taiwan_share": 0.45,
+ "pillars": {
+  "season":   {"label": "檔期推薦", "short": "檔期", "base_fit": 80, "desc": "有截止日的推薦與不推薦：月度新作、Steam 特賣、新品節、發表會。頻道做過 3 支。"},
+  "issue":    {"label": "產業爭議", "short": "爭議", "base_fit": 78, "desc": "玩家權益與產業事件：DEI、數位擁有權、漲價、裁員、負評潮。頻道做過 2 支。"},
+  "ranking":  {"label": "期待榜單", "short": "榜單", "base_fit": 72, "desc": "Top N 期待作、年度最佳。頻道做過 2 支。"},
+  "hardware": {"label": "硬體科技", "short": "硬體", "base_fit": 62, "desc": "主機、顯卡、掌機與遊戲相關科技。頻道做過 1 支（Steam Machine）。"},
+  "spotlight":{"label": "新作焦點", "short": "焦點", "base_fit": 56, "desc": "單一款遊戲的首發評價或突然爆紅。頻道還沒做過，是可以試水溫的新路線。"}
+ },
+ "type_pillar": {
+  "season": "season", "showcase": "season", "issue": "issue", "ranking": "ranking",
+  "hardware": "hardware", "launch": "spotlight", "sleeper": "spotlight"
+ },
+ "type_label": {
+  "season": "檔期", "showcase": "發表會", "issue": "爭議／產業", "ranking": "榜單",
+  "hardware": "硬體", "launch": "新作首發", "sleeper": "黑馬爆紅"
+ },
+ "owned_hardware": ["RTX 5090 電競筆電（ROG Strix SCAR 18）", "iPhone 17 Pro Max", "ROG Phone 9 Pro"],
+ "style": ["幽默、調侃、自嘲，但資訊要清楚", "玩家視角、有立場，不裝中立", "只講有證據的內容，傳言與人身攻擊一律不碰", "收錄台灣玩家反應，結尾邀請觀眾到留言區"],
+ "excluded": ["課金手遊宣傳", "與玩遊戲無關的八卦與個人指控"]
+}

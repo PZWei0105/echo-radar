@@ -1,0 +1,195 @@
+[
+ {
+  "name": "fr_news",
+  "url": "https://pzwei0105.github.io/forreal/data/news.json"
+ },
+ {
+  "name": "fr_releases",
+  "url": "https://pzwei0105.github.io/forreal/data/releases.json"
+ },
+ {
+  "name": "fr_tech",
+  "url": "https://pzwei0105.github.io/forreal/data/tech.json"
+ },
+ {
+  "name": "fr_meta",
+  "url": "https://pzwei0105.github.io/forreal/data/meta.json"
+ },
+ {
+  "name": "fr_items_gz",
+  "url": "https://raw.githubusercontent.com/PZWei0105/forreal/state/items.json.gz",
+  "max": 30000000
+ },
+ {
+  "name": "fr_names",
+  "url": "https://raw.githubusercontent.com/PZWei0105/forreal/state/names.json"
+ },
+ {
+  "name": "steam_mostplayed",
+  "url": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/"
+ },
+ {
+  "name": "steam_topreleases",
+  "url": "https://api.steampowered.com/ISteamChartsService/GetTopReleasesPages/v1/"
+ },
+ {
+  "name": "steam_wishlist",
+  "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=popularwishlist&category1=998&cc=tw&l=tchinese&infinite=1"
+ },
+ {
+  "name": "steam_comingsoon",
+  "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=popularcomingsoon&category1=998&cc=tw&l=tchinese&infinite=1"
+ },
+ {
+  "name": "steam_popularnew",
+  "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=popularnew&category1=998&cc=tw&l=tchinese&infinite=1"
+ },
+ {
+  "name": "steam_globaltop",
+  "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=globaltopsellers&category1=998&cc=tw&l=tchinese&infinite=1"
+ },
+ {
+  "name": "steam_players_cs2",
+  "url": "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=730"
+ },
+ {
+  "name": "steam_reviews_recent",
+  "url": "https://store.steampowered.com/appreviews/4435490?json=1&language=all&purchase_type=all&num_per_page=100&filter=recent"
+ },
+ {
+  "name": "steam_reviews_tchinese",
+  "url": "https://store.steampowered.com/appreviews/4435490?json=1&language=tchinese&purchase_type=all&num_per_page=0"
+ },
+ {
+  "name": "steam_appdetails",
+  "url": "https://store.steampowered.com/api/appdetails?appids=4435490&cc=tw&l=tchinese"
+ },
+ {
+  "name": "steam_appdetails_en",
+  "url": "https://store.steampowered.com/api/appdetails?appids=2767030&cc=tw&l=english"
+ },
+ {
+  "name": "steamspy_top2w",
+  "url": "https://steamspy.com/api.php?request=top100in2weeks"
+ },
+ {
+  "name": "steam_events_doc",
+  "url": "https://partner.steamgames.com/doc/marketing/upcoming_events",
+  "max": 3000000
+ },
+ {
+  "name": "wiki_pv_article",
+  "bot_ua": true,
+  "url": "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/Grand_Theft_Auto_VI/daily/20260920/20261019"
+ },
+ {
+  "name": "wiki_pv_zh",
+  "bot_ua": true,
+  "url": "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/zh.wikipedia/all-access/user/%E4%BF%A0%E7%9B%9C%E7%8D%B5%E8%BB%8A%E6%89%8BVI/daily/20260920/20261019"
+ },
+ {
+  "name": "wiki_pv_top_en",
+  "bot_ua": true,
+  "url": "https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/2026/10/18"
+ },
+ {
+  "name": "wiki_pv_top_zh",
+  "bot_ua": true,
+  "url": "https://wikimedia.org/api/rest_v1/metrics/pageviews/top/zh.wikipedia/all-access/2026/10/18"
+ },
+ {
+  "name": "wikidata_sparql",
+  "bot_ua": true,
+  "headers": {
+   "Accept": "application/sparql-results+json"
+  },
+  "url": "https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fappid%20%3Fitem%20%3Fen%20%3Fzh%20WHERE%20%7B%0A%20%20VALUES%20%3Fappid%20%7B%20%22271590%22%20%221091500%22%20%224435490%22%20%221245620%22%20%222767030%22%20%7D%0A%20%20%3Fitem%20wdt%3AP1733%20%3Fappid%20.%0A%20%20OPTIONAL%20%7B%20%3Fen%20schema%3Aabout%20%3Fitem%20%3B%20schema%3AisPartOf%20%3Chttps%3A//en.wikipedia.org/%3E%20.%20%7D%0A%20%20OPTIONAL%20%7B%20%3Fzh%20schema%3Aabout%20%3Fitem%20%3B%20schema%3AisPartOf%20%3Chttps%3A//zh.wikipedia.org/%3E%20.%20%7D%0A%7D"
+ },
+ {
+  "name": "ptt_steam",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/Steam/index.html"
+ },
+ {
+  "name": "ptt_cchat",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/C_Chat/index.html"
+ },
+ {
+  "name": "ptt_ps",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/PlayStation/index.html"
+ },
+ {
+  "name": "ptt_ns",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/NSwitch/index.html"
+ },
+ {
+  "name": "ptt_xbox",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/XBOX/index.html"
+ },
+ {
+  "name": "ptt_pcshop",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/PC_Shopping/index.html"
+ },
+ {
+  "name": "ptt_search",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/C_Chat/search?q=GTA"
+ },
+ {
+  "name": "ptt_hot",
+  "headers": {
+   "Cookie": "over18=1"
+  },
+  "url": "https://www.ptt.cc/bbs/hotboards.html"
+ },
+ {
+  "name": "gtrends_new",
+  "url": "https://trends.google.com/trending/rss?geo=TW"
+ },
+ {
+  "name": "gtrends_old",
+  "url": "https://trends.google.com/trends/trendingsearches/daily/rss?geo=TW"
+ },
+ {
+  "name": "reddit_games_json",
+  "bot_ua": true,
+  "url": "https://www.reddit.com/r/Games/top.json?t=day&limit=50"
+ },
+ {
+  "name": "reddit_games_rss",
+  "bot_ua": true,
+  "url": "https://www.reddit.com/r/Games/top/.rss?t=day"
+ },
+ {
+  "name": "reddit_old_json",
+  "bot_ua": true,
+  "url": "https://old.reddit.com/r/pcgaming/top.json?t=day&limit=50"
+ },
+ {
+  "name": "reddit_games_browser",
+  "url": "https://www.reddit.com/r/Games/top.json?t=day&limit=50"
+ },
+ {
+  "name": "dcard_game",
+  "url": "https://www.dcard.tw/service/api/v2/forums/game/posts?popular=true&limit=30"
+ }
+]

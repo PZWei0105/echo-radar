@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.state/
+.probe/
+public/
+node_modules/
+.venv/

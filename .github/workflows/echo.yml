@@ -1,0 +1,71 @@
+name: echo
+
+on:
+  schedule:
+    # 每小時更新一次（UTC 時間第 47 分；玩真的在第 23 分更新，晚一點跑才能拿到它最新的新聞）
+    - cron: '47 * * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'build / probe / deploy'
+        default: build
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: echo-data
+  cancel-in-progress: false
+
+jobs:
+  # 抓資料、評分、產生企劃包，把網站打包好（不碰 Pages 環境，Pages 有狀況時資料照樣更新）
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      deploy: ${{ steps.pipe.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - id: pipe
+        run: python -m pipeline.dispatch
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
+          REPO: ${{ github.repository }}
+      - if: steps.pipe.outputs.deploy == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      # 公開 repo 的排程 60 天沒動靜會被 GitHub 自動停用；每週主動續命一次
+      - name: keep schedule alive
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%u%H)" = "703" ]; then
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/echo.yml/enable" && echo "schedule kept alive"
+          fi
+
+  # 發布到 GitHub Pages
+  deploy:
+    needs: run
+    if: needs.run.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

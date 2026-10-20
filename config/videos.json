@@ -1,0 +1,19 @@
+{
+ "note": "頻道做過或正在做的影片。雷達用它判斷「已經做過」，App 的「企劃」頁可以補上上片日期與觀看數，雷達會依各路線的成績調整契合度。",
+ "videos": [
+  {"id": "h2-2026-top10", "title": "2026 下半年最值得期待的 10 款遊戲", "pillar": "ranking", "type": "ranking", "date": "2026-07", "status": "done",
+   "match": {"keys": ["下半年期待", "下半年最值得期待"], "entities": []}},
+  {"id": "steam-machine-2026", "title": "Steam Machine 2026 分析", "pillar": "hardware", "type": "hardware", "date": "2026-07", "status": "done",
+   "match": {"keys": ["Steam Machine"], "entities": []}},
+  {"id": "steam-autumn-2026", "title": "2026 Steam 秋季特賣：推薦與不推薦", "pillar": "season", "type": "season", "date": "2026-10-07", "status": "done",
+   "match": {"keys": ["Steam 秋季特賣", "秋季特賣"], "events": ["autumn-2026"]}},
+  {"id": "gears-eday-dei", "title": "《戰爭機器：E-Day》與歐美遊戲圈 DEI 爭議", "pillar": "issue", "type": "issue", "date": "2026-10-08", "status": "done",
+   "match": {"keys": ["E-Day", "戰爭機器", "Gears of War", "DEI"], "entities": []}},
+  {"id": "torres-ownership", "title": "遊戲數位擁有權：Torres《Power To The Players Act》", "pillar": "issue", "type": "issue", "date": "2026-10-19", "status": "making",
+   "match": {"keys": ["Torres", "Power To The Players", "Stop Killing Games", "數位擁有權", "digital ownership"], "entities": []}},
+  {"id": "nov-2026-games", "title": "2026 年 11 月新遊戲：推薦與不推薦", "pillar": "season", "type": "season", "date": "2026-10-20", "status": "making",
+   "match": {"keys": ["11 月新遊戲", "11月新遊戲"], "months": ["2026-11"]}},
+  {"id": "nextfest-oct-2026", "title": "Steam 新品節（2026 年 10 月）試玩推薦與不推薦", "pillar": "season", "type": "season", "date": "2026-10-20", "status": "making",
+   "match": {"keys": ["新品節"], "events": ["nextfest-2026-10"]}}
+ ]
+}
