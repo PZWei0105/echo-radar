@@ -90,9 +90,9 @@ def launch(t):
     gap = _tc_gap(gb)
     if gap and abs(gap[0] - gap[1]) >= 10:
         a, b = gap
-        word = '不滿' if b < a else '特別買單'
-        pz.append(_A('pz', f'全球 {a}% 好評，繁中玩家 {b}%：台灣人在{word}什麼？',
-                     '翻繁中評論找答案（翻譯、價格、伺服器、文化差異）', f'Steam 全球 {a}% vs 繁中評論 {b}%'))
+        title = (f'《{n}》全球 {a}% 好評，繁中玩家只給 {b}%：台灣人在不滿什麼？' if b < a
+                 else f'《{n}》全球只有 {a}% 好評，繁中玩家卻給 {b}%：台灣人愛它什麼？')
+        pz.append(_A('pz', title, '翻繁中評論找答案（翻譯、價格、伺服器、文化差異）', f'Steam 全球 {a}% vs 繁中評論 {b}%'))
     if gb.get('tc') is False:
         pz.append(_A('pz', f'沒有中文的《{n}》，值得硬啃嗎？', '實際看英文量有多大、哪些地方會卡關，給英文不好的台灣玩家參考',
                      'Steam 語言列表沒有繁體中文', need='需要你實際玩過一段'))
@@ -169,8 +169,16 @@ def _subject(t):
         return f'《{gb["name"]}》'
     if t.get('product'):
         return t['product']
+    m = re.search(r'《[^《》]{1,30}》', t['title'])
+    if m:
+        return m.group(0)
     head = re.split(r'[：:，,]', t['title'])[0]
     return head if len(head) <= 12 else None
+
+
+def _sp(subj):
+    """英數字結尾的名稱（PS6、Switch 2）後面接中文時空一格。"""
+    return f'{subj} ' if subj and re.search(r'[A-Za-z0-9]$', subj) else (subj or '')
 
 
 def issue(t):
@@ -187,7 +195,7 @@ def issue(t):
                       (t.get('hooks') or ['近期評價大跌'])[0]))
         gap = _tc_gap(gb)
         if gap and gap[1] <= gap[0] - 10:
-            out.append(_A('pz', f'繁中玩家好評只剩 {gap[1]}%：台灣人在不滿什麼？', '翻繁中評論找台灣玩家的抱怨（翻譯、伺服器、價格、外掛）',
+            out.append(_A('pz', f'{subj}繁中玩家只給 {gap[1]}% 好評：台灣人在不滿什麼？', '翻繁中評論找台灣玩家的抱怨（翻譯、伺服器、價格、外掛）',
                           f'Steam 全球 {gap[0]}% vs 繁中評論 {gap[1]}%'))
         else:
             out.append(_A('pz', f'{subj}還能不能買？台灣玩家的避雷指南', '用台灣售價與繁中評論給結論，順便自嘲「我的願望單也中槍」',
@@ -196,13 +204,13 @@ def issue(t):
     out = [_A('safe', f'一次看懂：{short}', '時間線＋各方說法＋目前已知的事實', '多家媒體報導，資料完整')]
     con_t, con_h = _ISSUE_CON.get(c, _ISSUE_CON['backlash'])
     basis = (t.get('hooks') or [None])[0] or f'題材類型：{t.get("issue_label") or "產業事件"}'
-    out.append(_A('contrast', (f'{subj}{con_t}' if gb else f'{subj}：{con_t}') if subj else con_t, con_h, basis,
+    out.append(_A('contrast', (f'{subj}{con_t}' if subj.startswith('《') else f'{subj}：{con_t}') if subj else con_t, con_h, basis,
                   risk='只用有證據的內容，不碰傳聞與人身攻擊' if c == 'culture' or '敏感題材' in (t.get('flags') or []) else None))
     if c == 'ownership':
         out.append(_A('pz', f'數位擁有權續集：{subj or "這次"}又是誰把遊戲收走了？', '接續頻道上一支 Torres 法案影片，延續系列觀眾',
                       '頻道已經做過數位擁有權題材，續集最容易帶回舊觀眾'))
     elif c == 'price' and gb and gb.get('price'):
-        out.append(_A('pz', f'換算成台幣 NT${int(gb["price"]):,}：台灣玩家還買不買單？', '用台灣售價與薪水換算，自嘲錢包先投降',
+        out.append(_A('pz', f'{subj or ""}換算成台幣 NT${int(gb["price"]):,}：台灣玩家還買不買單？', '用台灣售價與薪水換算，自嘲錢包先投降',
                       f'Steam 台灣售價 {gb.get("price_text")}'))
     elif top and top.get('push', 0) >= 10:
         out.append(_A('pz', f'PTT 鄉民怎麼看{subj or "這件事"}？台灣玩家反應＋我的立場', '整理 PTT 熱門推文，再講自己站哪邊（有立場，不裝中立）',
@@ -213,16 +221,26 @@ def issue(t):
     return out
 
 
-_HW_BIZ = re.compile(r'價|售|漲|降|銷|出貨|規格|上市|發表|price|sale|sold|spec|launch|ship', re.I)
+_HW_BIZ = re.compile(r'售價|價格|定價|單價|價錢|漲價|降價|漲|開賣|銷量|銷售|出貨|規格|上市|發表|price|sale|sold|spec|launch|ship', re.I)
+_HW_SALES = re.compile(r'銷量|銷售|出貨|賣破|賣出|sold|sales|shipped|units', re.I)
+_HW_PRICE = re.compile(r'售價|價格|定價|單價|價錢|漲價|降價|漲|price', re.I)
 
 
 def hardware(t):
     short = t['title']
     subj = _subject(t)
     text = ' '.join([t['title']] + [f.get('v', '') for f in (t.get('facts') or [])[:3]])
+    if _HW_SALES.search(t['title']) and not _HW_PRICE.search(t['title']):
+        # 銷量／出貨新聞：重點是賣得好不好，不是值不值得買
+        return [
+            _A('safe', f'一次看懂：{short}', '數字從哪來、跟上一代或對手比是多還是少', '多家媒體報導'),
+            _A('contrast', f'{_sp(subj) or "這台主機"}到底賣得好不好？數字背後的真相', '把官方數字跟同期、對手放在一起看，講清楚是真的好還是話術',
+               '銷量新聞最容易被斷章取義'),
+            _A('pz', f'台灣玩家買單嗎？{_sp(subj) or "這台主機"}在台灣的實際狀況', '用台灣售價、繁中支援、PTT 討論看在地熱度', '台灣媒體很少從台灣玩家角度講'),
+        ]
     if _HW_BIZ.search(text):
         out = [_A('safe', f'一次看懂：{short}', '規格、價格、上市時間、跟上一代差多少', '多家媒體報導')]
-        out.append(_A('contrast', f'{subj or "新硬體"}對台灣玩家其實不划算？算給你看', '用台灣售價與實際遊戲需求算 CP 值', '硬體題觀眾最在意「值不值得」'))
+        out.append(_A('contrast', f'{_sp(subj) or "新硬體"}對台灣玩家其實不划算？算給你看', '用台灣售價與實際遊戲需求算 CP 值', '硬體題觀眾最在意「值不值得」'))
         out.append(_A('pz', f'我的 RTX 5090 筆電 vs {subj or "新硬體"}：真的需要升級嗎？', '拿手上的筆電當對照組，自嘲「我已經升無可升」',
                       '你手上有 RTX 5090 筆電可以實測', need='需要你用筆電實測錄影'))
         return out
@@ -281,13 +299,14 @@ def season(t):
             _A('pz', 'PZ 的黑五購物車：我自己會買什麼', '把自己的購物清單攤開來，順便自嘲', '真心推薦最有說服力'),
         ]
     if t['id'].startswith('season:month:'):
-        m = title.split(' ')[0]
+        mm = re.search(r'(\d{1,2})\s*月', title)
+        m = f'{mm.group(1)} 月' if mm else '這個月'
         games = t.get('games') or []
         k = max(1, min(3, len(games) // 4)) if games else 2
         return [
-            _A('safe', title, '每款一句話賣點，最後給「首發買／等特價／不用買」三分類', '頻道做過 11 月版，可以直接續做'),
-            _A('contrast', f'{m}只有 {k} 款值得首發，其他等特價就好', '敢砍才有立場', f'這個月有 {len(games)} 款值得注意的新作'),
-            _A('pz', f'{m}錢包保衛戰：預算 NT$3,000 怎麼花', '用台幣預算排出最划算的組合', '台灣觀眾用台幣想事情'),
+            _A('safe', title, '每款一句話賣點，最後給「首發買／等特價／不用買」三分類', '頻道做過每月新作推薦，格式可以直接套'),
+            _A('contrast', f'{m}新作只有 {k} 款值得首發，其他等特價就好', '敢砍才有立場', f'這個月有 {len(games)} 款值得注意的新作'),
+            _A('pz', f'{m}新作錢包保衛戰：預算 NT$3,000 怎麼花', '用台幣預算排出最划算的組合', '台灣觀眾用台幣想事情'),
         ]
     if t['type'] == 'weekly':
         return [

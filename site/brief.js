@@ -114,7 +114,8 @@ export function makeBrief(t, angle, ctx) {
   const L = [];
   const title = angle ? angle.title : t.title;
   L.push('# 給筆電 Claude Code 的製作指令');
-  L.push(`## ${/[《「]/.test(title) ? title : `《${title}》`}｜YouTube 成片`);
+  // 《》只留給作品名；影片標題本身已經有《遊戲名》就直接用，沒有的用「」框起來
+  L.push(`## ${/[《「]/.test(title) ? title : `「${title}」`}｜YouTube 成片`);
   L.push('');
   L.push('> 使用方式：在筆電 Claude Code 開一個**新對話**，整份貼上（或存成 brief.md 放進工作資料夾後說「照 brief.md 執行」）。');
   L.push(`> 這份企劃由《回波》選題雷達在 ${fmtTime(ctx.generated)} 產生，裡面的數字是當時抓到的，**開工後一律重新查證**。`);
