@@ -20,6 +20,14 @@
 - 推到 `main` 時執行 `control/job.json` 指定的工作：`build`／`deploy`（只改介面）／`probe`（實測新來源，原始回應存到 `probe-results` 分支）。
 - 雲端 Claude 工作環境連不到這些網站，要實測新來源就用 `probe`。
 
+## 容易改壞的規則
+- App 會用使用者的方向設定重算分數：`topics.py` 的 `_deadline_timing`、`total`、`grade` 跟 `site/app.js` 的 `deadlineTiming`、`evaluate` 必須一模一樣（改一邊就要改另一邊）。等級照畫面上顯示的整數判斷。
+- 「已經做過」：檔期（events）與月份（months）一對一、永遠算；新聞關鍵字（keys）只看製作中或 30 天內上片的影片，更早的只提示「可以做續集」。
+- `config/keywords.json` 的英文詞會自動加上「前後不能接英數字」的邊界，要對複數或變化形就自己寫出來；`issue_priority` 決定一則新聞同時符合多個分類時用哪一個切角。
+- Steam 活動是太平洋時間早上 10 點開始，台灣是隔天凌晨 1 點：題目與預報一律用 `topics.ev_days` 換成台灣日期。
+- 方向設定同步是逐筆合併（企劃、觀看數、靜音、角度、筆記照題目合併；刪除會留 `del` 紀錄），不是誰最後存誰贏。
+- 在線人數超過 6 小時沒更新、評論超過 24 小時沒更新就不當成「現在」的數字；快取每輪會清掉太舊的。
+
 ## 本機測試
 - 把 `probe-results` 分支解開到 scratchpad，`python3 tests/local_build.py <輸出資料夾> <state 資料夾>` 用原始回應跑一整輪（不連網）。
 - 介面：把輸出的 `data/` 放到 `copy_site` 產生的資料夾，起本機伺服器，用 Playwright 以手機寬度截圖檢查。

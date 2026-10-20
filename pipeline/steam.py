@@ -253,12 +253,20 @@ def players(http, appids, hist: dict, health, budget: int = 120, skip: dict | No
     for a in [a for a in appids if str(a) not in skip][:budget]:
         try:
             r = http.get(PLAYERS.format(appid=a), timeout=15, retries=0)
-            n = ((r.json() or {}).get('response') or {}).get('player_count') if r.status_code == 200 else None
-            if n is not None:
-                hist.setdefault(str(a), []).append([stamp, int(n)])
-                done += 1
+            if r.status_code == 200:
+                n = ((r.json() or {}).get('response') or {}).get('player_count')
+                if n is not None:
+                    hist.setdefault(str(a), []).append([stamp, int(n)])
+                    done += 1
+                else:
+                    skip[str(a)] = stamp  # 查得到但沒有人數（沒有統計的應用程式）
+            elif r.status_code == 404:
+                skip[str(a)] = stamp  # 還沒上市或沒有統計
             else:
-                skip[str(a)] = stamp
+                # 429、5xx 是暫時的：記成失敗、不列入一天不查的名單；被限流就先停
+                errs += 1
+                if r.status_code == 429:
+                    break
         except Exception:  # noqa: BLE001
             errs += 1
         time.sleep(0.08)

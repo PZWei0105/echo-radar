@@ -98,6 +98,33 @@ def _value(tk: _Tok, env: dict):
     return None
 
 
+def _args_start(blob: str, body: int) -> int:
+    """從函式本體的「{」往後走，跳過字串裡的括號，找到本體結束的「}」；回傳後面「(」之後的位置。
+    （標題裡可能有「}(」這種字，不能直接找最後一個「}(」）"""
+    depth = 0
+    q = None
+    i = body
+    n = len(blob)
+    while i < n:
+        c = blob[i]
+        if q:
+            if c == '\\':
+                i += 2
+                continue
+            if c == q:
+                q = None
+        elif c in '"\'`':
+            q = c
+        elif c == '{':
+            depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0:
+                return i + 2 if blob.startswith('(', i + 1) else -1
+        i += 1
+    return -1
+
+
 def parse_nuxt_articles(html: str) -> list[dict]:
     i = html.find('__NUXT__=(function(')
     if i < 0:
@@ -108,8 +135,10 @@ def parse_nuxt_articles(html: str) -> list[dict]:
     if not m:
         return []
     params = [p.strip() for p in m.group(1).split(',')]
-    k = blob.rfind('}(')
-    tk = _Tok(blob[k + 2:])
+    k = _args_start(blob, m.end() - 1)
+    if k < 0:
+        return []
+    tk = _Tok(blob[k:])
     args = []
     while len(args) < len(params):
         save = tk.i

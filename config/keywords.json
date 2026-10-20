@@ -1,5 +1,5 @@
 {
- "note": "題目分類用的固定關鍵字（大小寫不拘，可以寫正規表示式）。同樣的新聞永遠得到同樣的判斷。",
+ "note": "題目分類用的固定關鍵字（大小寫不拘，可以寫正規表示式）。英文詞一律自動加上「前後不能接英數字」的邊界，所以 sue 不會對到 issue、crunch 不會對到 Crunchyroll；要對複數或變化形就自己寫出來（lawsuits?）。同樣的新聞永遠得到同樣的判斷。",
  "issue": {
   "layoff": {
    "label": "裁員／關工作室",
@@ -8,42 +8,39 @@
     "laid off",
     "lays? off",
     "job cuts",
-    "studio (?:closure|closes|closed|shut)",
-    "studio (?:has )?(?:closed|shut down)",
-    "shuts? down (?:the )?studio",
-    "closes? (?:its )?studio",
-    "shut(?:s|ting)? down",
-    "closure",
+    "studio (?:closures?|closes|closed|closing|shut(?:s|ting)? down)",
+    "(?:studio|developer|team|company) (?:is |has |was |has been )?(?:closing|closed|shutting down|shut down)",
+    "shut(?:s|ting)? down (?:the |its |their )?(?:studio|team|developer|office)",
+    "clos(?:e|es|ed|ing) (?:its |the |their )?(?:studio|doors)",
     "bankrupt(?:cy)?",
-    "goes? under"
+    "(?:studio|developer|company|publisher) (?:goes|went|has gone) under"
    ],
    "zh": [
     "裁員",
-    "解散",
+    "工作室.{0,6}解散",
+    "團隊.{0,4}解散",
     "工作室.{0,8}關閉",
-    "開發商.{0,10}(?:關閉|破產|倒閉|停運)",
+    "開發商.{0,10}(?:關閉|破產|倒閉)",
     "倒閉",
     "破產",
-    "停運",
     "收掉"
    ]
   },
   "price": {
    "label": "漲價／定價",
    "en": [
-    "price (?:increase|hike|rise)",
-    "raises? (?:the )?price",
+    "price (?:increases?|hikes?|rises?)",
+    "raises? (?:the |its )?prices?",
     "\\$80",
     "\\$70 games?",
-    "more expensive",
-    "price cut"
+    "more expensive"
    ],
    "zh": [
     "漲價",
     "調漲",
-    "售價",
-    "定價",
-    "降價"
+    "價格調整",
+    "定價爭議",
+    "太貴"
    ]
   },
   "monet": {
@@ -52,15 +49,17 @@
     "microtransactions?",
     "loot box(?:es)?",
     "pay[- ]to[- ]win",
-    "battle pass",
-    "monetization"
+    "monetiz(?:ation|ed|ing|e)"
    ],
    "zh": [
     "內購",
     "微交易",
     "付費抽",
-    "開箱",
-    "通行證"
+    "開箱機制",
+    "抽獎機制",
+    "機率型",
+    "轉蛋",
+    "扭蛋"
    ]
   },
   "ownership": {
@@ -68,16 +67,17 @@
    "en": [
     "stop killing games",
     "digital ownership",
-    "delist(?:ed|ing)?",
+    "delist(?:s|ed|ing)?",
     "end of service",
     "servers? (?:shutdown|shutting down|going offline)",
     "always[- ]online",
-    "\\bDRM\\b",
+    "DRM",
     "denuvo"
    ],
    "zh": [
     "停服",
     "停止營運",
+    "停運",
     "下架",
     "永久連線",
     "數位擁有",
@@ -88,12 +88,12 @@
    "label": "玩家反彈",
    "en": [
     "backlash",
-    "review[- ]bomb(?:ed|ing)?",
-    "boycott",
-    "outrage",
-    "controvers(?:y|ial)",
+    "review[- ]bomb(?:s|ed|ing)?",
+    "boycott(?:s|ed|ing)?",
+    "outrage[sd]?",
+    "controvers(?:y|ies|ial)",
     "fans? (?:are )?(?:angry|furious|upset)",
-    "petition",
+    "petitions?",
     "refunds?"
    ],
    "zh": [
@@ -111,18 +111,17 @@
   "legal": {
    "label": "法律／政策",
    "en": [
-    "lawsuit",
-    "sues?\\b",
+    "lawsuits?",
+    "sues?",
     "sued",
-    "court",
-    "\\bFTC\\b",
-    "regulat(?:or|ion)",
-    "\\bban(?:ned|s)?\\b",
+    "courts?",
+    "FTC",
+    "regulat(?:ors?|ions?|ory)",
+    "ban(?:ned|s)?",
     "legislation",
-    "\\bbill\\b",
+    "bill",
     "congress",
-    "senator",
-    "representative"
+    "senators?"
    ],
    "zh": [
     "訴訟",
@@ -138,9 +137,13 @@
   "labor": {
    "label": "勞動／工會",
    "en": [
-    "union(?:ize|ized|s)?\\b",
-    "strike",
-    "crunch"
+    "(?<!European )(?<!Soviet )unions?",
+    "unioniz(?:e|ed|es|ing|ation)",
+    "on strike",
+    "strike (?:action|vote)",
+    "(?:SAG-AFTRA|union|workers?|actors?|staff|employees)\\W+(?:\\w+\\W+){0,3}strik(?:e|es|ing)",
+    "walk(?:out| out)",
+    "crunch(?: time| culture)?"
    ],
    "zh": [
     "工會",
@@ -154,53 +157,65 @@
    "en": [
     "generative ai",
     "ai[- ]generated",
-    "\\bAI art\\b",
-    "\\bgen ?ai\\b"
+    "AI art",
+    "gen ?ai",
+    "voice clon(?:e|es|ed|ing)",
+    "AI voices?"
    ],
    "zh": [
     "AI 生成",
     "AI生成",
     "AI 繪圖",
     "生成式 AI",
-    "生成式AI"
+    "生成式AI",
+    "AI ?複製",
+    "AI ?配音",
+    "AI ?聲音"
    ]
   },
   "culture": {
    "label": "文化戰／DEI",
    "en": [
-    "\\bDEI\\b",
-    "\\bwoke\\b",
+    "DEI",
+    "woke",
     "sweet baby",
-    "censor(?:ed|ship)",
-    "culture war"
+    "censor(?:s|ed|ing|ship)?",
+    "culture wars?"
    ],
    "zh": [
     "政治正確",
-    "審查",
-    "和諧"
+    "內容審查",
+    "審查制度",
+    "被和諧",
+    "和諧掉"
    ]
   },
   "deal": {
    "label": "收購／併購",
    "en": [
-    "acquir(?:e|es|ed|ing|ition)",
-    "merger",
-    "buyout",
-    "takeover"
+    "acquisitions?",
+    "acquired by",
+    "acquir(?:e|es|ed|ing) (?:the |a )?(?:studio|developer|publisher|company|stake)",
+    "buys? (?:the )?(?:studio|developer|publisher)",
+    "mergers?",
+    "buyouts?",
+    "takeovers?"
    ],
    "zh": [
     "收購",
     "併購",
-    "買下"
+    "買下.{0,6}(?:公司|工作室|開發商|發行商)"
    ]
   },
   "delay": {
    "label": "延期",
    "en": [
-    "delay(?:ed|s)?\\b",
-    "postpone(?:d)?",
+    "delayed",
+    "delays? (?:its |the )?(?:release|launch)",
+    "delays? (?:to|until|into)",
+    "postpone[sd]?",
     "pushed back",
-    "pushed to 20"
+    "pushed (?:back )?to 20\\d\\d"
    ],
    "zh": [
     "延期",
@@ -212,21 +227,21 @@
  },
  "sensitive": {
   "en": [
-   "\\bDEI\\b",
-   "\\bwoke\\b",
-   "harass",
-   "assault",
-   "abuse",
-   "death",
-   "dies\\b",
+   "DEI",
+   "woke",
+   "harass(?:ment|ed|ing)?",
+   "assault(?:s|ed)?",
+   "abus(?:e|es|ed|ive)",
+   "deaths?(?! stranding)",
+   "dies",
    "died",
    "cancer",
-   "politic",
-   "election",
+   "politic(?:s|al|ians?)?",
+   "elections?",
    "trump",
    "gender",
-   "racis",
-   "lawsuit"
+   "racis[mt]s?",
+   "lawsuits?"
   ],
   "zh": [
    "騷擾",
@@ -242,32 +257,32 @@
  },
  "hardware": {
   "strong_en": [
-   "\\bGPU\\b",
-   "graphics card",
-   "\\bRTX\\b",
+   "GPUs?",
+   "graphics cards?",
+   "RTX",
    "GeForce",
    "Radeon",
-   "\\bRDNA\\b",
-   "\\bDLSS\\b",
-   "\\bFSR\\b",
-   "frame gen",
-   "\\bVRAM\\b",
+   "RDNA ?\\d?",
+   "DLSS ?\\d?",
+   "FSR ?\\d?",
+   "frame gen(?:eration)?",
+   "VRAM",
    "DRAM",
    "memory prices?",
    "RAM prices?",
    "Steam Machine",
    "Steam Deck",
    "Steam Frame",
-   "\\bPS6\\b",
+   "PS6",
    "PlayStation 6",
    "PS5 Pro",
    "next[- ]gen Xbox",
    "Xbox Ally",
    "ROG Ally",
    "Legion Go",
-   "handheld",
-   "gaming laptop",
-   "gaming PC",
+   "handhelds?",
+   "gaming laptops?",
+   "gaming PCs?",
    "console prices?"
   ],
   "strong_zh": [
@@ -282,7 +297,7 @@
   "platform_en": [
    "Switch 2",
    "Xbox Series",
-   "\\bPS5\\b",
+   "PS5",
    "PlayStation 5"
   ],
   "platform_zh": [
@@ -291,15 +306,19 @@
    "Xbox"
   ],
   "context_en": [
-   "price",
+   "prices?",
+   "pricing",
+   "priced",
    "sales",
    "sold",
    "units",
-   "spec",
-   "teardown",
+   "specs?",
+   "specifications?",
+   "teardowns?",
    "hardware",
    "shipments?",
-   "\\$\\d"
+   "shipped",
+   "\\$\\d+"
   ],
   "context_zh": [
    "售價",
@@ -356,18 +375,18 @@
  },
  "gaming": {
   "en": [
-   "\\bgames?\\b",
+   "games?",
    "gaming",
    "gamers?",
    "Steam",
    "PlayStation",
    "Xbox",
    "Nintendo",
-   "\\bSwitch\\b",
-   "console",
+   "Switch",
+   "consoles?",
    "esports",
-   "game studio",
-   "game developer"
+   "game studios?",
+   "game developers?"
   ],
   "zh": [
    "遊戲",
@@ -378,5 +397,25 @@
    "Steam",
    "任天堂"
   ]
- }
+ },
+ "issue_priority": [
+  "ownership",
+  "layoff",
+  "ai",
+  "labor",
+  "monet",
+  "price",
+  "deal",
+  "delay",
+  "culture",
+  "legal",
+  "backlash"
+ ],
+ "general_tech_sources": [
+  "tomshw",
+  "engadget",
+  "technews",
+  "inside"
+ ],
+ "general_tech_note": "這些是綜合科技媒體：玩真的放在遊戲區的文章，標題裡還要真的提到遊戲或主機，才會變成產業爭議題（硬體題不受影響）。"
 }

@@ -23,6 +23,9 @@ const S = {
 // ------------------------------------------------------------------ 小工具
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// 外部來源的連結只接受 http(s)，其他（javascript: 之類）一律不當成連結
+const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? String(u) : '');
+const link = (u, html) => (safeUrl(u) ? `<a href="${esc(safeUrl(u))}" target="_blank" rel="noopener">${html}</a>` : html);
 const clamp = (x, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, x));
 const pad = (n) => String(n).padStart(2, '0');
 const WD = '日一二三四五六';
@@ -77,6 +80,40 @@ function writePrefs(sync = true) {
   try { localStorage.setItem(LS, JSON.stringify(S.prefs)); } catch (e) { /* 私密模式存不了，照樣運作 */ }
   if (sync) Remote.schedule();
 }
+// 刪除紀錄：兩台裝置同步時，才分得出「這台刪掉的」和「那台新加的」
+function markDel(kind, id) { S.prefs.del = { ...(S.prefs.del || {}), [`${kind}:${id}`]: new Date().toISOString() }; }
+function unDel(kind, id) {
+  const k = `${kind}:${id}`;
+  if (S.prefs.del && S.prefs.del[k]) { const d = { ...S.prefs.del }; delete d[k]; S.prefs.del = d; }
+}
+// 合併兩份方向設定：權重這類單一設定用比較新的那份；企劃、觀看數、靜音、角度、筆記照題目逐筆合併
+function mergePrefs(a, b) {
+  if (!b || typeof b !== 'object') return a;
+  if (!a || typeof a !== 'object') return b;
+  const aNew = (a.updated || '') >= (b.updated || '');
+  const N = aNew ? a : b;
+  const O = aNew ? b : a;
+  const out = { ...O, ...N };
+  for (const k of ['plan', 'videos', 'mute', 'angle', 'notes']) out[k] = { ...(O[k] || {}), ...(N[k] || {}) };
+  const maxMerge = (x, y) => { const r = { ...(x || {}) }; for (const [k, v] of Object.entries(y || {})) if (!r[k] || v > r[k]) r[k] = v; return r; };
+  out.watchAt = maxMerge(O.watchAt, N.watchAt);
+  out.watch = [...new Set([...(N.watch || []), ...(O.watch || [])])];
+  const del = maxMerge(O.del, N.del);
+  const cut = new Date(Date.now() - 60 * 86400000).toISOString();
+  for (const [k, when] of Object.entries(del)) {
+    if (when < cut) { delete del[k]; continue; }
+    const i = k.indexOf(':');
+    const kind = k.slice(0, i);
+    const id = k.slice(i + 1);
+    // 刪掉之後又重新加回來的（加入時間比刪除晚）就保留
+    if (kind === 'plan' && out.plan[id] && (out.plan[id].at || '') <= when) delete out.plan[id];
+    else if (kind === 'mute' && out.mute[id] && (out.mute[id].at || '') <= when) delete out.mute[id];
+    else if (kind === 'watch' && (out.watchAt[id] || '') <= when) out.watch = out.watch.filter((w) => w !== id);
+  }
+  out.del = del;
+  out.updated = N.updated || O.updated;
+  return out;
+}
 function getKey() { try { return localStorage.getItem(LS_KEY) || ''; } catch (e) { return ''; } }
 function setKey(v) { try { if (v) localStorage.setItem(LS_KEY, v); else localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ } }
 const P = {
@@ -116,15 +153,21 @@ function learned() {
 function grade(s) { return s >= 70 ? '必拍' : s >= 58 ? '可拍' : s >= 46 ? '觀望' : '先跳過'; }
 function deadlineTiming(today, open, startBy, publishBy, close) {
   if (close && today > close) return [null, '已經過了'];
-  if (open && today < open) return [22, `${daysBetween(today, open)} 天後才開始熱（${md(open)} 起）`];
+  if (open && today < open) {
+    const k = daysBetween(today, open);
+    if (k > 3) return [22, `${k} 天後才開始熱（${md(open)} 起）`];
+    // 再幾天就開始熱：照開工日算，但最多 60（跟後台同一套規則）
+    const [tm] = deadlineTiming(today, null, startBy, publishBy, close);
+    return [Math.min(60, tm ?? 22), `${k} 天後開始熱（${md(open)} 起），現在可以先準備`];
+  }
   const d = startBy ? daysBetween(today, startBy) : 99;
   if (publishBy && today > publishBy) return [45, `最佳上架日 ${md(publishBy)} 已過，現在補拍還來得及到 ${md(close)}`];
   if (d < 0) {
     const left = daysBetween(today, publishBy);
     if (left <= 0) return [72, '今天就是最後上架日，趕不上就換成下一階段的角度'];
-    return [88, `時間很趕：最晚 ${mdw(publishBy)} 要上架，只剩 ${left} 天`];
+    return [88, `時間很趕：最晚 ${mdw(publishBy)}要上架，只剩 ${left} 天`];
   }
-  if (d === 0) return [100, `今天就要開工，${mdw(publishBy)} 前上架`];
+  if (d === 0) return [100, `今天就要開工，${mdw(publishBy)}前上架`];
   if (d <= 2) return [92, `${d} 天內要開工（${md(startBy)}），${md(publishBy)} 前上架`];
   if (d <= 6) return [78, `本週開工（${md(startBy)} 前），${md(publishBy)} 前上架`];
   if (d <= 13) return [60, `下週開工就好，${md(publishBy)} 前上架`];
@@ -177,7 +220,9 @@ function evaluate() {
     const total = base * (0.6 + 0.4 * demand / 100);
     const raw = startBy ? daysBetween(today, startBy) : 99;
     const days = Math.max(0, raw);
-    out.push({ ...t, _s: sc, _score: total, _grade: grade(total), _startBy: startBy, _ttext: ttext, _days: days, _raw: raw,
+    // 等級照畫面上顯示的整數分數判斷（跟後台一樣），不會出現「58 分卻是觀望」
+    const disp = Math.round(total);
+    out.push({ ...t, _s: sc, _score: total, _disp: disp, _grade: grade(disp), _startBy: startBy, _ttext: ttext, _days: days, _raw: raw,
       _reasons: reasons, _watch: wh, _muted: !!P.mute[t.id], _plan: P.plan[t.id] || null });
   }
   out.sort((a, b) => b._score - a._score);
@@ -246,7 +291,7 @@ function renderEcho() {
   S.scope.draw(items);
 
   const today = todayISO();
-  const free = (t) => !t._muted && t._score >= 58 && !(t.done && ['done', 'making'].includes(t.done.status))
+  const free = (t) => !t._muted && t._disp >= 58 && !(t.done && ['done', 'making'].includes(t.done.status))
     && !(t._plan && ['making', 'live'].includes(t._plan.status));
   const urgent = S.list.filter((t) => free(t) && t._raw === 0 && t.window && t.window.publish_by > today);
   const late = S.list.filter((t) => free(t) && t._raw < 0 && t.window && t.window.publish_by >= today);
@@ -283,7 +328,7 @@ const FILTERS = [['all', '全部'], ['hot', '必拍與可拍'], ['season', '檔�
 function renderList() {
   $('#filters').innerHTML = FILTERS.map(([k, l]) => `<button type="button" class="fbtn" data-filter="${k}" aria-pressed="${S.filter === k}">${l}</button>`).join('');
   let xs = S.list.filter((t) => (S.filter === 'muted' ? t._muted : !t._muted));
-  if (S.filter === 'hot') xs = xs.filter((t) => t._score >= 58);
+  if (S.filter === 'hot') xs = xs.filter((t) => t._disp >= 58);
   else if (PILLAR_ORDER.includes(S.filter)) xs = xs.filter((t) => t.pillar === S.filter);
   else if (S.filter === 'watch') xs = xs.filter((t) => t._watch);
   if (S.q) {
@@ -312,7 +357,7 @@ function renderCal() {
   // 截止日用你的製作天數重算
   const dl = [];
   for (const t of S.list) {
-    if (t._muted || t._score < 46 || !t.window || !t.window.publish_by) continue;
+    if (t._muted || t._disp < 46 || !t.window || !t.window.publish_by) continue;
     if (t._startBy && t._startBy >= today) dl.push({ date: t._startBy, kind: 'deadline', title: `最晚開工：${t.title}`, ref: t.id, score: t._score });
     if (t.window.publish_by >= today) dl.push({ date: t.window.publish_by, kind: 'deadline', title: `最晚上架：${t.title}`, ref: t.id, score: t._score, pub: true });
   }
@@ -335,7 +380,7 @@ function renderCal() {
       if (x.kind === 'deadline' && ref) sub = `總分 ${Math.round(ref._score)}，${ref._grade}${ref.done ? `，${STATUS[ref.done.status] || '做過'}` : ''}${ref._plan ? `，${STATUS[ref._plan.status]}` : ''}`;
       else if (x.kind === 'release') sub = ref ? `雷達 ${Math.round(ref._score)} 分` : '';
       else if (!sub) sub = CAL_KIND[x.kind] || '';
-      const attr = ref ? `data-topic="${esc(ref.id)}"` : x.u ? `data-href="${esc(x.u)}"` : '';
+      const attr = ref ? `data-topic="${esc(ref.id)}"` : safeUrl(x.u) ? `data-href="${esc(safeUrl(x.u))}"` : '';
       return `<button type="button" class="citem k-${esc(x.kind)}" ${attr}><span class="k" aria-hidden="true"></span><span>${esc(x.title)}${span}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
     }).join('');
     return `<div class="cal-day"><div class="cal-d ${rel === 0 ? 'today' : ''}"><b>${dd.getMonth() + 1}/${dd.getDate()}</b><span>${lab}</span></div>${rows}</div>`;
@@ -361,7 +406,7 @@ function renderPlan() {
         <button type="button" class="mini" data-plan-del>移除</button>
       </div>
       ${x.status === 'live' ? `<div class="card-row"><label class="field"><span>上片日期</span><input type="date" value="${esc(x.date || '')}" data-plan-date></label>
-        <label class="field"><span>7 天觀看數</span><input type="number" inputmode="numeric" min="0" step="1" value="${x.views || ''}" placeholder="例如 12000" data-plan-views></label></div>` : ''}
+        <label class="field"><span>7 天觀看數</span><input type="number" inputmode="numeric" min="0" step="1" value="${esc(x.views || '')}" placeholder="例如 12000" data-plan-views></label></div>` : ''}
     </div>`;
   };
   const seed = videos().filter((v) => !v.fromPlan);
@@ -371,7 +416,7 @@ function renderPlan() {
       <div class="card-row">
         ${['making', 'live'].map((s) => `<button type="button" class="mini ${v.status === s || (s === 'live' && v.status === 'done') ? 'on' : ''}" data-video-status="${s}">${STATUS[s]}</button>`).join('')}
       </div>
-      <div class="card-row"><label class="field"><span>7 天觀看數</span><input type="number" inputmode="numeric" min="0" step="1" value="${v.views || ''}" placeholder="還沒填" data-video-views></label></div>
+      <div class="card-row"><label class="field"><span>7 天觀看數</span><input type="number" inputmode="numeric" min="0" step="1" value="${esc(v.views || '')}" placeholder="還沒填" data-video-views></label></div>
     </div>`;
   let html = '';
   for (const [k, lab, empty] of [['idea', '想拍', '在題目裡按「想拍」，就會出現在這裡。'], ['making', '製作中', '開始做的題目，點「製作中」移到這裡。'], ['live', '已上片', '上片後點「已上片」，記得回填 7 天觀看數。']]) {
@@ -401,7 +446,7 @@ function renderSet() {
   const L = learned();
   const h = S.meta.health || {};
   const hasKey = !!getKey();
-  const sl = (id, label, val, min, max, step, out) => `<div class="slider"><label for="${id}">${label}</label><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${val}"><output for="${id}">${out}</output></div>`;
+  const sl = (id, label, val, min, max, step, out) => `<div class="slider"><label for="${esc(id)}">${esc(label)}</label><input id="${esc(id)}" type="range" min="${min}" max="${max}" step="${step}" value="${esc(val)}"><output for="${esc(id)}">${esc(out)}</output></div>`;
   const healthNames = { forreal_news: '玩真的（遊戲新聞）', forreal_tech: '玩真的（科技新聞）', steam_wishlist: 'Steam 願望單', steam_upcoming: 'Steam 即將推出', steam_trending: 'Steam 熱門新品',
     steam_topsell: 'Steam 全球熱銷', steam_topsell_tw: 'Steam 台灣熱銷', steam_mostplayed: 'Steam 最多人玩', steam_players: 'Steam 在線人數', steam_details: 'Steam 商店資料',
     steam_reviews: 'Steam 評論', steamspy: 'SteamSpy', wiki_pageviews: 'Wikipedia 瀏覽量', wikidata: 'Wikidata 條目對應', wikidata_titles: 'Wikidata 中文條目',
@@ -523,14 +568,14 @@ function openTopic(id) {
   }
   const stRow = (s) => `<li class="st" style="--c:${echoColor(s.level)}"><span class="st-n">${esc(stationLabel(s.id))}${s.up ? '<span class="up" title="升溫中">▲</span>' : ''}</span>
       <span class="st-b"><i style="--w:${Math.round(s.level)}%"></i></span>
-      <span class="st-t">${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.text)}</a>` : esc(s.text)}</span></li>`;
+      <span class="st-t">${link(s.url, esc(s.text))}</span></li>`;
   const html = `
   <div class="sh-top">
     <button type="button" class="ibtn" data-close aria-label="關閉">${ICON.close}</button><span class="sp"></span>
     <button type="button" class="ibtn" data-star aria-pressed="${!!plan}">${ICON.star}<span>${plan ? STATUS[plan.status] : '想拍'}</span></button>
     <button type="button" class="ibtn" data-mute aria-pressed="${t._muted}">${ICON.mute}<span>${t._muted ? '已靜音' : '靜音'}</span></button>
   </div>
-  ${g && g.img ? `<img class="hero-img" src="${esc(g.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
+  ${g && safeUrl(g.img) ? `<img class="hero-img" src="${esc(safeUrl(g.img))}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
   <h2 class="sh-title" id="sh-title">${esc(t.title)}</h2>
   <div class="sh-chips">${pillarChip(t)}<span class="chip">${esc(t.type_label)}</span>${t.new ? '<span class="chip new">新上榜</span>' : ''}${t.done ? `<span class="chip flag">${esc(STATUS[t.done.status] || '做過')}：${esc(t.done.title)}</span>` : ''}${t.covered ? `<span class="chip flag">${esc(t.covered.title)} 會提到</span>` : ''}${(t.flags || []).map((f) => `<span class="chip flag">${esc(f)}</span>`).join('')}</div>
   <div class="gauge" style="--c:${c}"><span class="gauge-n"><b>${Math.round(t._score)}</b></span>
@@ -555,11 +600,11 @@ function openTopic(id) {
       ${a.need ? `<span class="ang-need">${esc(a.need)}</span>` : ''}${a.risk ? `<span class="ang-need">${esc(a.risk)}</span>` : ''}</button>`).join('')}</div>
   </div>
 
-  ${(t.facts || []).length ? `<div class="sec"><h3>事實清單</h3><p class="note">雷達抓到的資料，企劃包會要求開工時再查證一次。</p><ul class="facts">${t.facts.map((f) => `<li class="fact"><span class="fk">${esc(f.k)}</span><span>${esc(f.v)}</span><span class="fs">${f.u ? `<a href="${esc(f.u)}" target="_blank" rel="noopener">${esc(f.src || '來源')}</a>` : esc(f.src || '')}${f.at ? `，${fmtAt(f.at).split(' ')[0]}` : ''}</span></li>`).join('')}</ul></div>` : ''}
+  ${(t.facts || []).length ? `<div class="sec"><h3>事實清單</h3><p class="note">雷達抓到的資料，企劃包會要求開工時再查證一次。</p><ul class="facts">${t.facts.map((f) => `<li class="fact"><span class="fk">${esc(f.k)}</span><span>${esc(f.v)}</span><span class="fs">${safeUrl(f.u) ? link(f.u, esc(f.src || '來源')) : esc(f.src || '')}${f.at ? `，${fmtAt(f.at).split(' ')[0]}` : ''}</span></li>`).join('')}</ul></div>` : ''}
 
-  ${(t.ptt || []).length ? `<div class="sec"><h3>PTT 在聊什麼</h3><ul class="posts">${t.ptt.map((p) => `<li><span class="push ${p.push >= 100 ? 'hot' : p.push >= 30 ? 'warm' : ''}">${p.push >= 100 ? '爆' : p.push}</span><a href="${esc(p.u)}" target="_blank" rel="noopener">${esc(p.t)}</a></li>`).join('')}</ul></div>` : ''}
-  ${(t.reddit || []).length ? `<div class="sec"><h3>Reddit 在聊什麼</h3><ul class="posts">${t.reddit.map((p) => `<li><span class="push">#${p.rank}</span><a href="${esc(p.u)}" target="_blank" rel="noopener">${esc(p.t)}</a></li>`).join('')}</ul></div>` : ''}
-  ${(t.timeline || []).length > 1 ? `<div class="sec"><h3>時間線</h3><ul class="tl">${t.timeline.map((x) => `<li><time>${fmtAt(x.at)}</time>${x.u ? `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a>` : esc(x.t)}${x.src ? `（${esc(x.src)}）` : ''}</li>`).join('')}</ul></div>` : ''}
+  ${(t.ptt || []).length ? `<div class="sec"><h3>PTT 在聊什麼</h3><ul class="posts">${t.ptt.map((p) => `<li><span class="push ${p.push >= 100 ? 'hot' : p.push >= 30 ? 'warm' : ''}">${p.push >= 100 ? '爆' : esc(p.push)}</span>${link(p.u, esc(p.t))}</li>`).join('')}</ul></div>` : ''}
+  ${(t.reddit || []).length ? `<div class="sec"><h3>Reddit 在聊什麼</h3><ul class="posts">${t.reddit.map((p) => `<li><span class="push">#${esc(p.rank)}</span>${link(p.u, esc(p.t))}</li>`).join('')}</ul></div>` : ''}
+  ${(t.timeline || []).length > 1 ? `<div class="sec"><h3>時間線</h3><ul class="tl">${t.timeline.map((x) => `<li><time>${fmtAt(x.at)}</time>${link(x.u, esc(x.t))}${x.src ? `（${esc(x.src)}）` : ''}</li>`).join('')}</ul></div>` : ''}
   ${(t.games || []).length ? `<div class="sec"><h3>這個檔期的候選遊戲</h3><ul class="posts">${t.games.map((x) => `<li><span class="push">${x.date ? md(x.date.length === 10 ? x.date : `${x.date}-01`) : ''}</span><span>《${esc(x.name)}》${x.big ? '（大作）' : ''}</span></li>`).join('')}</ul></div>` : ''}
 
   <div class="sec"><h3>我的想法</h3><label class="field"><span class="sr">寫下你對這題的想法</span><textarea id="note" placeholder="例如：想拿去年的經驗對比、想找朋友一起錄">${esc((P.plan[id] || {}).note || (S.prefs.notes || {})[id] || '')}</textarea></label></div>
@@ -605,8 +650,8 @@ async function openClaude(id) {
 function setPlan(id, status) {
   const t = S.byId[id];
   const plan = { ...(S.prefs.plan || {}) };
-  if (!status) delete plan[id];
-  else {
+  if (!status) { delete plan[id]; markDel('plan', id); } else {
+    unDel('plan', id);
     const old = plan[id] || {};
     plan[id] = { ...old, status, title: old.title || t.title, pillar: t ? t.pillar : old.pillar, type: t ? t.type : old.type,
       score: old.score ?? (t ? Math.round(t._score) : null), at: old.at || new Date().toISOString(), angle: t ? selectedAngle(t) : old.angle };
@@ -724,24 +769,37 @@ const Remote = {
       return JSON.parse(this.unb64(js.content || '') || '{}');
     } catch (e) { return null; }
   },
-  async push() {
+  // 套用合併後的設定（不改 updated，免得兩台裝置互相覺得對方比較舊）；有變就重排
+  adopt(merged) {
+    if (!merged || JSON.stringify(merged) === JSON.stringify(S.prefs)) return false;
+    S.prefs = merged;
+    try { localStorage.setItem(LS, JSON.stringify(S.prefs)); } catch (e) { /* ignore */ }
+    if (S.radar && S.meta) {
+      evaluate();
+      if ($('#sheet').hidden && S.view !== 'set') render(S.view);
+    }
+    return true;
+  },
+  async push(retry = true) {
     if (!getKey()) return;
     try {
-      await this.pull();
+      // 上傳前先合併另一台裝置的變更，不是誰最後存誰贏
+      const remote = await this.pull();
+      if (remote) this.adopt(mergePrefs(S.prefs, remote));
       const body = { message: '更新回波方向設定', content: this.b64(JSON.stringify(S.prefs, null, 1)), branch: 'user', ...(this.sha ? { sha: this.sha } : {}) };
       const r = await gh(`/repos/${S.meta.repo}/contents/prefs.json`, { method: 'PUT', body: JSON.stringify(body) });
-      if (r.ok) { const js = await r.json(); this.sha = js.content && js.content.sha; }
+      if (r.ok) { const js = await r.json(); this.sha = js.content && js.content.sha; } else if ((r.status === 409 || r.status === 422) && retry) await this.push(false);
     } catch (e) { /* 下次再同步 */ }
   },
   async boot() {
     if (getKey()) {
       const remote = await this.pull();
-      if (remote && remote.updated && (!S.prefs.updated || remote.updated > S.prefs.updated)) {
-        S.prefs = remote;
-        writePrefs(false);
-        return true;
-      }
-      return false;
+      if (!remote) return false;
+      const merged = mergePrefs(S.prefs, remote);
+      const changed = this.adopt(merged);
+      // 這台有還沒上傳的變更，就順便同步上去
+      if (JSON.stringify(merged) !== JSON.stringify(remote)) this.schedule();
+      return changed;
     }
     if (!S.prefs.updated) {
       try {
@@ -790,7 +848,7 @@ document.addEventListener('click', async (e) => {
   const d = el.dataset;
   if (d.go) { if (!$('#sheet').hidden) closeSheet(); go(d.go); return; }
   if (d.topic) { openTopic(d.topic); return; }
-  if (d.href) { window.open(d.href, '_blank', 'noopener'); return; }
+  if (d.href) { if (safeUrl(d.href)) window.open(safeUrl(d.href), '_blank', 'noopener'); return; }
   if (d.filter) { S.filter = d.filter; renderList(); return; }
   if ('urgent' in d) { S.filter = 'all'; S.sort = 'due'; go('list'); const so = $('#sort'); if (so) so.value = 'due'; return; }
   if ('close' in d) { closeSheet(); return; }
@@ -820,7 +878,7 @@ document.addEventListener('click', async (e) => {
   if ('mute' in d && S.open) {
     const t = S.byId[S.open];
     const m = { ...(S.prefs.mute || {}) };
-    if (m[S.open]) delete m[S.open]; else m[S.open] = { title: t.title, at: new Date().toISOString() };
+    if (m[S.open]) { delete m[S.open]; markDel('mute', S.open); } else { m[S.open] = { title: t.title, at: new Date().toISOString() }; unDel('mute', S.open); }
     S.prefs.mute = m;
     writePrefs();
     toast(m[S.open] ? '已靜音，這題不會再出現在雷達上' : '已取消靜音');
@@ -853,15 +911,24 @@ document.addEventListener('click', async (e) => {
   }
   // 方向頁
   if (el.id === 'watch-add') { addWatch(); return; }
-  if (d.watchDel != null) { const w = [...P.watch]; w.splice(Number(d.watchDel), 1); S.prefs.watch = w; writePrefs(); rerank(); renderSet(); return; }
-  if (d.unmute) { const m = { ...P.mute }; delete m[d.unmute]; S.prefs.mute = m; writePrefs(); rerank(); renderSet(); return; }
+  if (d.watchDel != null) {
+    const w = [...P.watch];
+    const [gone] = w.splice(Number(d.watchDel), 1);
+    if (gone) markDel('watch', gone);
+    S.prefs.watch = w; writePrefs(); rerank(); renderSet(); return;
+  }
+  if (d.unmute) { const m = { ...P.mute }; delete m[d.unmute]; markDel('mute', d.unmute); S.prefs.mute = m; writePrefs(); rerank(); renderSet(); return; }
   if (el.id === 'key-save') {
     const v = ($('#key-in').value || '').trim();
     if (!v) { toast('先貼上鑰匙'); return; }
     setKey(v);
     const ok = await testKey();
     if (!ok) { setKey(''); return; }
+    // 先把另一台裝置同步上去的設定拿下來合併，再上傳，不會蓋掉筆電上的企劃與觀看數
+    const remote = await Remote.pull();
+    if (remote) Remote.adopt(mergePrefs(S.prefs, remote));
     await Remote.push();
+    rerank();
     renderSet();
     return;
   }
@@ -900,6 +967,8 @@ function addWatch() {
   const v = (el.value || '').trim();
   if (!v) return;
   if (!P.watch.includes(v)) S.prefs.watch = [...P.watch, v];
+  S.prefs.watchAt = { ...(S.prefs.watchAt || {}), [v]: new Date().toISOString() };
+  unDel('watch', v);
   writePrefs();
   rerank();
   renderSet();

@@ -13,11 +13,13 @@
 import calendar as cal
 import datetime as dt
 import json
+import math
 import pathlib
 import re
 from zoneinfo import ZoneInfo
 
 from . import signals as S
+from .entities import has_cjk
 from .entities import key as name_key
 from .util import TW, clamp, hours_since, parse_day, parse_iso, sid
 
@@ -28,6 +30,34 @@ TPE = ZoneInfo('Asia/Taipei')
 
 def load_cfg(name):
     return json.loads((ROOT / 'config' / name).read_text(encoding='utf-8'))
+
+
+# 英數字的字詞邊界：Python 的 \b 會把中文字當成字的一部分（「新款PS6」裡的 PS6 前面不算邊界），所以自己定義
+_ASCII_B = r'(?:(?<=[A-Za-z0-9])(?![A-Za-z0-9])|(?<![A-Za-z0-9])(?=[A-Za-z0-9]))'
+
+
+def kw_regex(en=(), zh=()):
+    """把關鍵字清單編成一個正規表示式。英文詞前後不能接英數字（sue 不會對到 issue）；
+    中文詞照原樣比，但開頭或結尾是英數字時也加邊界（「Switch 2」不會對到「Switch 20」）。"""
+    parts = []
+    for p in en or []:
+        parts.append(f'(?<![A-Za-z0-9])(?:{p.replace(chr(92) + "b", _ASCII_B)})(?![A-Za-z0-9])')
+    for z in zh or []:
+        pre = '(?<![A-Za-z0-9])' if re.match(r'[A-Za-z0-9]', z) else ''
+        suf = '(?![A-Za-z0-9])' if re.search(r'[A-Za-z0-9]$', z) else ''
+        parts.append(f'{pre}(?:{z.replace(chr(92) + "b", _ASCII_B)}){suf}')
+    return re.compile('|'.join(parts), re.I) if parts else None
+
+
+def ev_days(ev):
+    """活動的開始與結束日（台灣日期）。Steam 的活動是太平洋時間早上 10 點開始，台灣已經是隔天凌晨 1 點。"""
+    s, e = parse_day(ev.get('start')), parse_day(ev.get('end'))
+    if ev.get('date_only') or 'steam' not in (ev.get('kind') or ''):
+        return s, e
+
+    def tw(d):
+        return dt.datetime(d.year, d.month, d.day, 10, tzinfo=PT).astimezone(TPE).date() if d else None
+    return tw(s), tw(e)
 
 
 # 新聞驅動的題目（爭議、硬體、發表會）沒有 Steam 人數可看，媒體與社群討論的權重要拉高
@@ -50,12 +80,19 @@ def total(scores: dict, w: dict) -> float:
     return base * (0.6 + 0.4 * scores['demand'] / 100)
 
 
+def shown(score: float) -> int:
+    """畫面上顯示的整數分數（四捨五入，跟 App 的 Math.round 一樣）。"""
+    return int(math.floor(score + 0.5))
+
+
 def grade(score: float) -> str:
-    if score >= 70:
+    """等級照畫面上顯示的整數判斷，才不會出現「58 分卻是觀望」。"""
+    s = shown(score)
+    if s >= 70:
         return '必拍'
-    if score >= 58:
+    if s >= 58:
         return '可拍'
-    if score >= 46:
+    if s >= 46:
         return '觀望'
     return '先跳過'
 
@@ -66,7 +103,11 @@ def _deadline_timing(today, open_d, start_by, publish_by, close):
         return None, '已經過了'
     if open_d and today < open_d:
         days = (open_d - today).days
-        return 22, f'{days} 天後才開始熱（{md(open_d)} 起）'
+        if days > 3:
+            return 22, f'{days} 天後才開始熱（{md(open_d)} 起）'
+        # 再幾天就開始熱：照開工日算，但還沒熱起來，最多給 60，免得前一天 22、隔天突然跳到 78
+        tm, _ = _deadline_timing(today, None, start_by, publish_by, close)
+        return min(60, tm if tm is not None else 22), f'{days} 天後開始熱（{md(open_d)} 起），現在可以先準備'
     d = (start_by - today).days if start_by else 99
     if publish_by and today > publish_by:
         return 45, f'最佳上架日 {md(publish_by)} 已過，現在補拍還來得及到 {md(close)}'
@@ -117,7 +158,7 @@ def is_live_f2p(g) -> bool:
     return bool(det.get('free') and (_F2P_CATS.search(cats) or _GACHA_HINT.search(det.get('desc') or '')))
 
 
-def _fit(cfg, pillar: str, g=None, *, platforms=None, done=None, covered=None, tw_level=0.0, watch=False):
+def _fit(cfg, pillar: str, g=None, *, platforms=None, done=None, covered=None, tw_level=0.0, prev=None):
     p = cfg['pillars'][pillar]
     fit = p['base_fit']
     why = [f"{p['label']}路線：{p['desc']}"]
@@ -148,9 +189,10 @@ def _fit(cfg, pillar: str, g=None, *, platforms=None, done=None, covered=None, t
     elif covered:
         fit -= 8
         why.append(f"《{covered['title']}》會提到它，單獨做要找新角度")
-    if watch:
-        fit += 15
-        why.append('在你的關注清單上')
+    elif prev:
+        fit += 3
+        why.append(f"頻道 {prev['date']} 做過《{prev['title']}》，可以當續集，舊觀眾會回來看")
+    # 關注清單的加分只在 App 端算一次（方向設定改了馬上生效），這裡不加，免得同步後加兩次
     return clamp(fit), why
 
 
@@ -301,37 +343,66 @@ def _timeline(stories, extra=()):
     return out[-8:]
 
 
-_PRODUCTS = [
-    (r'\bPS6\b|PlayStation 6', 'PS6'), (r'PS5 Pro', 'PS5 Pro'), (r'Switch 2', 'Switch 2'),
-    (r'Steam Machine', 'Steam Machine'), (r'Steam Deck', 'Steam Deck'), (r'Steam Frame', 'Steam Frame'),
-    (r'Xbox Ally|ROG Ally', 'ROG Xbox Ally'), (r'Legion Go', 'Legion Go'), (r'next[- ]gen Xbox|次世代 ?Xbox', '次世代 Xbox'),
-    (r'RTX ?50\d0', 'RTX 50 系列'), (r'RTX ?40\d0', 'RTX 40 系列'), (r'Radeon|RX ?9\d{3}', 'Radeon'),
-    (r'DLSS ?\d?', 'DLSS'), (r'\bFSR ?\d?', 'FSR'), (r'DRAM|記憶體.{0,4}(?:漲|價)|memory price|RAM price', '記憶體價格'),
+_PRODUCTS = [(re.compile(p, re.I), name) for p, name in [
+    (r'(?<![A-Za-z0-9])PS6(?![A-Za-z0-9])|PlayStation 6', 'PS6'), (r'PS5 Pro', 'PS5 Pro'),
+    (r'Switch 2(?![0-9])', 'Switch 2'), (r'Steam Machine', 'Steam Machine'), (r'Steam Deck', 'Steam Deck'),
+    (r'Steam Frame', 'Steam Frame'), (r'Xbox Ally|ROG Ally', 'ROG Xbox Ally'), (r'Legion Go', 'Legion Go'),
+    (r'next[- ]gen Xbox|次世代 ?Xbox', '次世代 Xbox'), (r'RTX ?50\d0', 'RTX 50 系列'), (r'RTX ?40\d0', 'RTX 40 系列'),
+    (r'Radeon|(?<![A-Za-z0-9])RX ?9\d{3}', 'Radeon'), (r'(?<![A-Za-z0-9])DLSS(?: ?\d)?(?![A-Za-z0-9])', 'DLSS'),
+    (r'(?<![A-Za-z0-9])FSR(?: ?\d)?(?![A-Za-z0-9])', 'FSR'),
+    (r'(?<![A-Za-z0-9])DRAM(?![A-Za-z0-9])|記憶體.{0,4}(?:漲|價)|memory price|RAM price', '記憶體價格'),
+]]
+
+
+def _product(title: str):
+    """標題的主角是哪個硬體：要出現在標題前段才算（「外媒憂淪下個 Steam Machine」的主角不是 Steam Machine）。"""
+    best = None
+    for rx, name in _PRODUCTS:
+        m = rx.search(title or '')
+        if m and (best is None or m.start() < best[0]):
+            best = (m.start(), name)
+    if not best or best[0] > max(12, len(title) * 0.4):
+        return None
+    return best[1]
+
+
+_HW_FACETS = [
+    ('price', re.compile(r'價格|售價|定價|單價|價錢|漲價|降價|千元|萬元|美元|台幣|(?<![A-Za-z0-9])(?:prices?|pricing|costs?)(?![A-Za-z0-9])|\$\s?\d', re.I)),
+    ('sales', re.compile(r'銷量|銷售|出貨|賣出|(?<![A-Za-z0-9])(?:sold|sales|units|shipped|shipments?)(?![A-Za-z0-9])', re.I)),
+    ('spec', re.compile(r'規格|效能|跑分|(?<![A-Za-z0-9])(?:specs?|specifications?|benchmarks?|leaks?)(?![A-Za-z0-9])', re.I)),
 ]
 
 
-def _product(text: str):
-    for pat, name in _PRODUCTS:
-        if re.search(pat, text or '', re.I):
-            return 'p:' + name
+def _hw_facet(title: str):
+    """硬體新聞在講哪個面向：價格、銷量、規格。同一個產品、同一個面向的新聞才合成一題。"""
+    for name, rx in _HW_FACETS:
+        if rx.search(title or ''):
+            return name
     return None
 
 
-def _merge_similar(groups: dict) -> dict:
-    """沒有對到遊戲的爭議新聞，標題很像（同一件事不同家報導、玩真的沒合併到）就合成一個題目。"""
-    keys = [k for k in groups if k[0] == 'issue' and not k[1].startswith(('app:', 'w:'))]
+def _merge_similar(groups: dict, products: dict) -> dict:
+    """同一件事不同家報導、玩真的沒合併到的新聞（沒對到遊戲的爭議、硬體新聞），標題很像就合成一個題目。
+    硬體新聞要主角是同一個產品，而且標題很像、或講的是同一個面向（例如都在講 PS6 的價格）才合併；
+    不會把「RTX 5090 貨運被偷」跟「RTX 5090 降價」合在一起。"""
+    keys = [k for k in groups if (k[0] == 'issue' and not k[1].startswith(('app:', 'w:'))) or k[0] == 'hardware']
     merged = {}
     used = set()
     for i, a in enumerate(keys):
         if a in used:
             continue
-        ta = ' '.join(filter(None, [groups[a][0][0].get('tz'), groups[a][0][0].get('t')]))
+        sa = groups[a][0][0]
         for b in keys[i + 1:]:
-            if b in used:
+            if b in used or b[0] != a[0]:
                 continue
-            tb = ' '.join(filter(None, [groups[b][0][0].get('tz'), groups[b][0][0].get('t')]))
-            if similar(groups[a][0][0].get('tz') or '', groups[b][0][0].get('tz') or '', True) >= 0.42 or \
-                    similar(groups[a][0][0].get('t') or '', groups[b][0][0].get('t') or '', False) >= 0.5:
+            if a[0] == 'hardware' and products.get(a) != products.get(b):
+                continue
+            sb = groups[b][0][0]
+            same_facet = (a[0] == 'hardware' and products.get(a) is not None
+                          and _hw_facet(sa.get('tz') or sa.get('t')) is not None
+                          and _hw_facet(sa.get('tz') or sa.get('t')) == _hw_facet(sb.get('tz') or sb.get('t')))
+            if same_facet or similar(sa.get('tz') or '', sb.get('tz') or '', True) >= 0.42 or \
+                    similar(sa.get('t') or '', sb.get('t') or '', False) >= 0.5:
                 groups[a] = groups[a] + groups[b]
                 used.add(b)
         merged[a] = groups[a]
@@ -342,9 +413,35 @@ def _merge_similar(groups: dict) -> dict:
 
 
 # ------------------------------------------------------------------ 已經做過？
+def _video_day(s):
+    """影片日期：「2026-10-07」或只寫到月份的「2026-07」（當成那個月的最後一天）。"""
+    if not s:
+        return None
+    d = parse_day(s) if len(s) >= 10 else None
+    if d:
+        return d
+    m = re.fullmatch(r'(\d{4})-(\d{2})', s)
+    if m:
+        y, mo = int(m.group(1)), int(m.group(2))
+        return dt.date(y, mo, cal.monthrange(y, mo)[1])
+    return None
+
+
 class Done:
-    def __init__(self, videos: list[dict]):
+    """頻道做過或正在做的影片。
+
+    檔期（events）與月份（months）是一對一的，永遠算數；關鍵字（keys）比對新聞標題時，
+    只有製作中或最近 30 天內上片的影片才算「已經做過」。更早的只當作「可以做續集」的參考，不扣分。
+    """
+    RECENT_DAYS = 30
+
+    def __init__(self, videos: list[dict], today=None):
         self.videos = videos
+        self.today = today
+        self._rx = {}
+        for v in videos:
+            keys = (v.get('match') or {}).get('keys') or []
+            self._rx[v['id']] = kw_regex(zh=[re.escape(k) for k in keys])
 
     def for_event(self, event_id):
         for v in self.videos:
@@ -358,13 +455,32 @@ class Done:
                 return v
         return None
 
-    def for_text(self, text, pillar=None):
-        t = (text or '').lower()
+    def _recent(self, v):
+        if v.get('status') == 'making' or not self.today:
+            return True
+        d = _video_day(v.get('date'))
+        return d is None or (self.today - d).days <= self.RECENT_DAYS
+
+    def _hits(self, text, pillar=None, head=False):
+        """text 可以用換行分開好幾個標題（中文標題、英文標題）。head=True 時關鍵字要出現在某個標題的前段（是主角）。"""
+        parts = [p for p in (text or '').split('\n') if p.strip()]
         for v in self.videos:
-            for k in (v.get('match') or {}).get('keys') or []:
-                if k.lower() in t and (pillar is None or v.get('pillar') == pillar):
-                    return v
-        return None
+            rx = self._rx.get(v['id'])
+            if not rx or (pillar is not None and v.get('pillar') != pillar):
+                continue
+            for p in parts:
+                m = rx.search(p)
+                if m and (not head or m.start() <= max(12, len(p) * 0.4)):
+                    yield v
+                    break
+
+    def for_text(self, text, pillar=None):
+        """製作中或最近上片的影片：新聞裡任何地方提到都算（正在做的題目，相關新聞都該併進那支影片）。"""
+        return next((v for v in self._hits(text, pillar) if self._recent(v)), None)
+
+    def older_for_text(self, text, pillar=None):
+        """比較早的影片：新聞的主角就是它，才提示「可以做續集」。"""
+        return next((v for v in self._hits(text, pillar, head=True) if not self._recent(v) and v.get('status') == 'done'), None)
 
 
 def _done_obj(v):
@@ -384,13 +500,21 @@ def _words(s: str) -> set:
 
 
 def similar(a: str, b: str, zh: bool) -> float:
+    """兩個標題有多像（重疊的詞 ÷ 比較短那個標題的詞數）。
+
+    太短的標題（例如「[閒聊] 漲價」）只要跟任何含「漲價」的新聞重疊一個詞就會變成 100%，
+    所以比較短的那個至少要有 5 組（英文 3 個）詞，而且至少重疊 3 組（英文 2 個）才算。"""
     if zh:
         x, y = _bigrams(a), _bigrams(b)
     else:
         x, y = _words(a), _words(b)
     if not x or not y:
         return 0.0
-    return len(x & y) / min(len(x), len(y))
+    small = min(len(x), len(y))
+    inter = len(x & y)
+    if small < (5 if zh else 3) or inter < (3 if zh else 2):
+        return 0.0
+    return inter / small
 
 
 def related_posts(text_zh: str, text_en: str, ptt: dict, reddit: list, t0, kw=()):
@@ -442,7 +566,7 @@ class Builder:
                  summaries, hist_ranks, seen, t0, user=None):
         self.reg = reg
         self.cfg = cfg
-        self.done = Done(videos)
+        self.done = Done(videos, t0.astimezone(TW).date())
         self.kw = kw
         self.stories = stories
         self.src = src_table
@@ -462,10 +586,11 @@ class Builder:
 
     # ---------------- 關鍵字
     def _compile_kw(self):
-        def comp(en, zh):
-            parts = [f'(?:{p})' for p in (en or [])] + [f'(?:{z})' for z in (zh or [])]
-            return re.compile('|'.join(parts), re.I) if parts else None
-        self.issue_re = {k: comp(v.get('en', []), v.get('zh', [])) for k, v in self.kw['issue'].items()}
+        comp = kw_regex
+        order = self.kw.get('issue_priority') or list(self.kw['issue'])
+        # 越具體的分類越前面（「下架」先於泛泛的「爭議」），題目的切角照第一個分類走
+        cats = [k for k in order if k in self.kw['issue']] + [k for k in self.kw['issue'] if k not in order]
+        self.issue_re = {k: comp(self.kw['issue'][k].get('en', []), self.kw['issue'][k].get('zh', [])) for k in cats}
         self.issue_label = {k: v['label'] for k, v in self.kw['issue'].items()}
         self.sens_re = comp(self.kw['sensitive']['en'], self.kw['sensitive']['zh'])
         hw = self.kw['hardware']
@@ -474,6 +599,7 @@ class Builder:
         self.hw_context = comp(hw['context_en'], hw['context_zh'])
         self.show_re = comp(self.kw['showcase']['en'], self.kw['showcase']['zh'])
         self.gaming_re = comp(self.kw['gaming']['en'], self.kw['gaming']['zh'])
+        self.tech_src = set(self.kw.get('general_tech_sources') or [])
 
     def _is_hardware(self, text, has_game):
         if self.hw_strong and self.hw_strong.search(text):
@@ -500,9 +626,11 @@ class Builder:
         self.topics[t['id']] = t
 
     def _finish(self, t: dict, cards, demand, demand_why, timing, timing_text, fit, fit_why, ease, ease_why, w):
-        t['scores'] = {'demand': round(demand, 1), 'timing': round(timing, 1), 'fit': round(fit, 1), 'ease': round(ease, 1)}
-        t['score'] = round(total(t['scores'], w), 1)
-        t['grade'] = grade(t['score'])
+        t['scores'] = {'demand': round(clamp(demand), 1), 'timing': round(clamp(timing), 1), 'fit': round(clamp(fit), 1),
+                       'ease': round(clamp(ease), 1)}
+        raw = total(t['scores'], w)
+        t['score'] = round(raw, 1)
+        t['grade'] = grade(raw)
         t['stations'] = cards
         t['rising'] = sum(1 for c in cards if c.get('up'))
         t['why'] = _why_now(cards, timing_text)
@@ -571,7 +699,7 @@ class Builder:
                 continue
             ym = f'{rd.year}-{rd.month:02d}'
             covered = self.done.for_month(ym)
-            fit, fit_why = _fit(self.cfg, 'spotlight', g, covered=_done_obj(covered), tw_level=summ['tw'], watch=g.watch)
+            fit, fit_why = _fit(self.cfg, 'spotlight', g, covered=_done_obj(covered), tw_level=summ['tw'])
             det = g.details or {}
             m = g.sig.get('media') or {}
             ease, ease_why = _ease(official=m.get('official'), multi=(m.get('n72', 0) >= 3), store=bool(g.appid),
@@ -639,7 +767,7 @@ class Builder:
             tid = f'sleeper:{g.gid}'
             fs = self.first_seen(tid)
             timing, ttext = _decay_timing(fs, 6, bool(summ['rising']), self.t0)
-            fit, fit_why = _fit(self.cfg, 'spotlight', g, tw_level=summ['tw'], watch=g.watch)
+            fit, fit_why = _fit(self.cfg, 'spotlight', g, tw_level=summ['tw'])
             det = g.details or {}
             m = g.sig.get('media') or {}
             ease, ease_why = _ease(store=True, multi=(m.get('n72', 0) >= 3), trailer=(det.get('movies') or 0) > 0,
@@ -664,6 +792,7 @@ class Builder:
     def news_driven(self, links: dict):
         w = self.cfg['weights']
         groups = {}
+        products = {}
         for s in self.stories:
             age = hours_since(s.get('up') or s.get('at'), self.t0)
             if age > 96:
@@ -675,7 +804,9 @@ class Builder:
             official = 'official' in (s.get('flags') or [])
             gids = links.get(s['id']) or []
             main_title = ' '.join(x for x in (s.get('t'), s.get('tz')) if x)
-            gaming = s.get('sec') == 'game' or bool(gids) or bool(self.gaming_re and self.gaming_re.search(main_title))
+            # 綜合科技媒體（Tom's Hardware 等）放在遊戲區的文章，標題要真的跟遊戲有關才算
+            in_game_sec = s.get('sec') == 'game' and s.get('src') not in self.tech_src
+            gaming = in_game_sec or bool(gids) or bool(self.gaming_re and self.gaming_re.search(main_title))
             hw = self._is_hardware(title_text, bool(gids))
             show = bool(self.show_re and self.show_re.search(title_text))
             if cats and gaming:
@@ -690,18 +821,60 @@ class Builder:
                 gkey = (gids[0] if gids else s['id']) + ':' + cats[0]
             elif hw and (n >= 2 or official or self.src.get(s.get('src'), {}).get('tier', 3) <= 2):
                 kind = 'hardware'
-                gkey = _product(title_text) or s['id']
-            elif show and (n >= 2 or official):
-                kind = 'showcase'
                 gkey = s['id']
+                products[(kind, gkey)] = _product(s.get('tz') or s.get('t') or '')
+            elif show and (n >= 2 or official):
+                # 同一場發表會的多篇報導合成一題（「任天堂直面會」「Nintendo Direct」算同一場）
+                kind = 'showcase'
+                gkey = 'sc:' + self._show_name(title_text) + ':' + self._week_of(s.get('at'))
             else:
                 continue
             groups.setdefault((kind, gkey), []).append((s, cats, gids, text))
-        groups = _merge_similar(groups)
+        groups = _merge_similar(groups, products)
         for (kind, gkey), items in groups.items():
-            t = self._news_topic(kind, gkey, items, w)
+            t = self._news_topic(kind, gkey, items, w, products.get((kind, gkey)))
             if t:
                 self.add(t)
+        self._dedupe_reviews()
+
+    _SHOW_ALIAS = {'任天堂直面會': 'nintendo direct', '直面會': 'nintendo direct', '遊戲大獎': 'game awards'}
+
+    def _show_name(self, text):
+        m = self.show_re.search(text or '') if self.show_re else None
+        name = (m.group(0) if m else 'show').strip().lower()
+        return self._SHOW_ALIAS.get(name, name)
+
+    def _week_of(self, at):
+        d = parse_iso(at) if at else None
+        d = d.astimezone(TW).date() if d else self.today
+        y, wk, _ = d.isocalendar()
+        return f'{y}w{wk:02d}'
+
+    def _dedupe_reviews(self):
+        """同一款遊戲同時有「Steam 負評潮」和「玩家反彈」新聞題時只留一題：保留分數高的，把另一題的新聞與討論併進來。"""
+        for tid in [k for k in self.topics if k.endswith(':reviews')]:
+            rv = self.topics.get(tid)
+            gid = (rv.get('game') or {}).get('gid') if rv else None
+            if not gid:
+                continue
+            for other in [k for k in self.topics if k != tid and k.startswith(f'issue:{gid}:')]:
+                ot = self.topics[other]
+                keep, drop = (rv, ot) if rv['score'] >= ot['score'] else (ot, rv)
+                seen_f = {(f.get('k'), f.get('v')) for f in keep.get('facts') or []}
+                keep['facts'] = (keep.get('facts') or []) + [f for f in drop.get('facts') or [] if (f.get('k'), f.get('v')) not in seen_f]
+                seen_t = {(x.get('at'), x.get('t')) for x in keep.get('timeline') or []}
+                keep['timeline'] = sorted((keep.get('timeline') or []) + [x for x in drop.get('timeline') or []
+                                                                          if (x.get('at'), x.get('t')) not in seen_t],
+                                          key=lambda x: x.get('at') or '')[-8:]
+                for k2 in ('ptt', 'reddit'):
+                    if not keep.get(k2) and drop.get(k2):
+                        keep[k2] = drop[k2]
+                ids = {c['id'] for c in keep.get('stations') or []}
+                keep['stations'] = (keep.get('stations') or []) + [c for c in drop.get('stations') or [] if c['id'] not in ids]
+                del self.topics[drop['id']]
+                if drop is rv:
+                    break
+                rv = keep
 
     def _big(self, gid) -> bool:
         g = self.reg.games.get(gid)
@@ -710,7 +883,7 @@ class Builder:
         sm = self.summ.get(gid) or {}
         return g.big or g.ranks.get('wishlist', 999) <= 50 or g.ranks.get('topsell', 999) <= 30 or sm.get('global', 0) >= 55
 
-    def _news_topic(self, kind, gkey, items, w):
+    def _news_topic(self, kind, gkey, items, w, product=None):
         items.sort(key=lambda x: (int(x[0].get('n') or 1), 'official' in (x[0].get('flags') or [])), reverse=True)
         main, cats, gids, text = items[0]
         all_cats = []
@@ -768,12 +941,14 @@ class Builder:
         demand = clamp((1 - share) * glob + share * tw + min(12, 4 * n_rise))
         dwhy = [f'全球回波 {round(glob)}、台灣回波 {round(tw)}'] + ([f'{n_rise} 個測站同步升溫'] if n_rise else [])
         first = min((x['at'] for x in stories if x.get('at')), default=None)
+        # 題目代號用最早那篇報導，之後同一件事有新報導加入，代號也不會變（「首次出現時間」才算得準）
+        anchor = min((x[0] for x in items), key=lambda s: s.get('at') or '9999')['id']
         if kind == 'issue':
-            tid = f'issue:{gkey}'
+            tid = f'issue:{gkey}' if gkey.startswith(('app:', 'w:')) else f'issue:{anchor}:{gkey.rsplit(":", 1)[-1]}'
             half = 4
             pillar = 'issue'
         elif kind == 'hardware':
-            tid = f'hw:{gkey}'
+            tid = f'hw:{anchor}'
             half = 5
             pillar = 'hardware'
         else:
@@ -782,8 +957,10 @@ class Builder:
             pillar = 'season'
         fs = self.first_seen(tid, first)
         timing, ttext = _decay_timing(fs, half, n_rise >= 2, self.t0)
-        done = self.done.for_text(zh_title + ' ' + (main.get('t') or ''), None)
-        fit, fit_why = _fit(self.cfg, pillar, g if g else None, done=_done_obj(done), tw_level=tw)
+        done_text = zh_title + '\n' + (main.get('t') or '')
+        done = self.done.for_text(done_text, None)
+        prev = None if done else self.done.older_for_text(done_text, None)
+        fit, fit_why = _fit(self.cfg, pillar, g if g else None, done=_done_obj(done), tw_level=tw, prev=_done_obj(prev))
         if kind == 'hardware':
             ease, ease_why = _ease(official=official, multi=n_src >= 3, rumor_only=rumor_only, sensitive=sensitive,
                                    extra=[(5, '你手上有 RTX 5090 筆電，可以做實測對照')] if re.search(r'RTX|GeForce|DLSS|顯卡|GPU', text, re.I) else None)
@@ -797,7 +974,7 @@ class Builder:
         fsd = parse_iso(fs).astimezone(TW).date() if parse_iso(fs) else self.today
         pub = fsd + dt.timedelta(days=3 if kind != 'showcase' else 2)
         t = {'id': tid, 'type': kind, 'pillar': pillar, 'title': title, 'issue': all_cats, 'issue_label': label,
-             'product': gkey[2:] if gkey.startswith('p:') else None,
+             'product': product if kind == 'hardware' else None,
              'game': _game_brief(g) if g else None, 'facts': _stories_facts(stories, 6) + (_game_facts(g)[:3] if g else []),
              'timeline': _timeline(stories),
              'window': {'kind': 'decay', 'open': fsd.isoformat(), 'publish_by': pub.isoformat(),
@@ -813,8 +990,11 @@ class Builder:
         w = self.cfg['weights']
         for g in self.reg.games.values():
             rv = g.reviews or {}
+            # 評論快取超過 12 小時沒更新就不拿來判斷負評潮（舊數字不能當成現在的狀況）
+            if hours_since(rv.get('at'), self.t0) > 12:
+                continue
             a, r = rv.get('all') or {}, rv.get('recent') or {}
-            if not a.get('pct') or not r.get('pct') or (a.get('n') or 0) < 500:
+            if a.get('pct') is None or r.get('pct') is None or (a.get('n') or 0) < 500:
                 continue
             if r['pct'] > a['pct'] - 25 or (r.get('per_day') or 0) < 15:
                 continue
@@ -823,7 +1003,9 @@ class Builder:
                 continue
             tid = f'issue:{g.gid}:reviews'
             fs = self.first_seen(tid)
-            timing, ttext = _decay_timing(fs, 4, True, self.t0)
+            # 還在升溫：有測站同步升溫，或最近 100 篇是兩天內湧進來的
+            rising = bool(summ.get('rising')) or (r.get('span_d') or 99) <= 2
+            timing, ttext = _decay_timing(fs, 4, rising, self.t0)
             fit, fit_why = _fit(self.cfg, 'issue', g, tw_level=summ['tw'])
             ease, ease_why = _ease(store=True, multi=(g.sig.get('media') or {}).get('n72', 0) >= 2,
                                    extra=[(10, '負評原因直接看 Steam 評論就查得到')])
@@ -839,7 +1021,7 @@ class Builder:
                             'close': (fsd + dt.timedelta(days=10)).isoformat(), 'text': ttext},
                  'ptt': (g.sig.get('ptt') or {}).get('posts', [])[:5], 'flags': [], 'hooks': [hook],
                  'demand_parts': {'global': round(glob), 'tw': round(tw)}}
-            self.add(self._finish(t, cards, demand + 8, dwhy + ['負評潮通常會帶來大量討論'], timing, ttext, fit, fit_why,
+            self.add(self._finish(t, cards, clamp(demand + 8), dwhy + ['負評潮通常會帶來大量討論'], timing, ttext, fit, fit_why,
                                   ease, ease_why, w))
 
     # ---------------- 檔期（固定行事曆＋每月新作＋年底榜單＋每週大事）
@@ -848,8 +1030,7 @@ class Builder:
         for ev in cal_cfg['events']:
             specs = ev.get('topics') or ([ev['topic']] if ev.get('topic') else [])
             for spec in specs:
-                start = parse_day(ev['start'])
-                end = parse_day(ev['end'])
+                start, end = ev_days(ev)
                 if not start:
                     continue
                 key = spec.get('key', 'main')

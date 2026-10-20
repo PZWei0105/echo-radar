@@ -125,7 +125,8 @@ def build_registry(fr, lists, mostplayed, spy, details_cache, user):
                        release=(x.get('date'), x.get('prec'), x.get('text')) if x.get('date') else None)
         g.verified = True
         if x.get('url') and '/wiki/' in x['url'] and not g.wiki_en:
-            g.wiki_en = x['url'].rsplit('/wiki/', 1)[-1]
+            # 網址裡的條目名是編碼過的（%3A、%27），要先解開，不然查瀏覽量時會被編碼兩次而查不到
+            g.wiki_en = wiki._title_from_url(x['url'].split('#', 1)[0])
     # 商店資料（中文名、發售日）
     for g in list(reg.games.values()):
         if g.appid and (details_cache.get(str(g.appid)) or {}).get('d'):
@@ -244,12 +245,17 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     pl_ids = list(dict.fromkeys(mp_ids + released[:120]))
     no_players = st.load('cache/noplayers.json', {})
     steam.players(http, pl_ids, players_hist, health, budget=200, skip=no_players)
+    stamp_now = int(t0.timestamp())
     for g in reg.games.values():
         if g.appid:
-            if str(g.appid) in players_hist:
-                g.players = steam.player_stats(players_hist[str(g.appid)])
-            if str(g.appid) in reviews_cache:
-                g.reviews = reviews_cache[str(g.appid)]
+            ser = players_hist.get(str(g.appid))
+            # 最後一筆超過 6 小時的在線人數不算「現在」，不拿來顯示或判斷
+            if ser and stamp_now - max(p[0] for p in ser) <= 6 * 3600:
+                g.players = steam.player_stats(ser)
+            rv = reviews_cache.get(str(g.appid))
+            # 評論快取超過一天沒更新就不用（正常 5.5 小時更新一次）
+            if rv and hours_since(rv.get('at'), t0) <= 24:
+                g.reviews = rv
     tick('steam_enrich', t_)
 
     # 6) 維基
@@ -389,7 +395,13 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     for name, obj in outputs.items():
         (data_dir / name).write_text(dumps(obj), encoding='utf-8')
 
-    # 13) 存狀態
+    # 13) 存狀態（快取順便清掉太久沒用到的，state 分支才不會越長越大）
+    prune(details_cache, 14 * 24, t0)
+    prune(reviews_cache, 7 * 24, t0)
+    prune(wmap, 30 * 24, t0)
+    prune(gn_cache, 48, t0)
+    for k in [k for k, v in pv.items() if not v.get('fetched') or (today - (parse_day(v['fetched']) or today)).days > 7]:
+        del pv[k]
     st.save('health.json', health)
     st.save('cache/details.json.gz', details_cache)
     st.save('cache/reviews.json.gz', reviews_cache)
@@ -411,6 +423,12 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
                  'errors': sorted(k for k, v in health.items() if not v.get('ok'))})
     st.save('runs.json', runs[-60:])
     return outputs
+
+
+def prune(cache: dict, max_age_h: float, t0):
+    """刪掉超過 max_age_h 小時沒更新的快取（每筆都有 at 欄位）。"""
+    for k in [k for k, v in cache.items() if not isinstance(v, dict) or hours_since(v.get('at'), t0) > max_age_h]:
+        del cache[k]
 
 
 def pick_top(tlist, n=5):
@@ -435,8 +453,10 @@ def build_calendar(cal_cfg, tlist, reg, notable_by_month, today, b):
     items = []
     horizon = today + dt.timedelta(days=60)
     for ev in cal_cfg['events']:
-        s, e = parse_day(ev['start']), parse_day(ev['end'])
-        if not s or (e or s) < today - dt.timedelta(days=1) or s > horizon:
+        s, e = topics.ev_days(ev)  # 台灣日期（Steam 活動在台灣是隔天凌晨 1 點開始、凌晨 1 點結束）
+        if s and e and e > s and not ev.get('date_only') and 'steam' in (ev.get('kind') or ''):
+            e = e - dt.timedelta(days=1)  # 凌晨 1 點結束，實際上是玩到前一天晚上
+        if not s or (e or s) < today or s > horizon:
             continue
         items.append({'date': s.isoformat(), 'end': (e or s).isoformat(), 'kind': ev.get('kind'), 'title': ev['name'],
                       'when': b._event_when(ev), 'note': ev.get('note'), 'u': ev.get('src'), 'ref': None})

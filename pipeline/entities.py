@@ -11,9 +11,11 @@ import re
 import unicodedata
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-_CJK = re.compile(r'[\u3400-\u9fff\uf900-\ufaff]')
+# 中日韓文字：漢字、日文假名（ホームズ）、韓文。假名和韓文也要留著，不然「ホームズ奇譚」會只剩「奇譚」
+_CJK_RANGES = r'\u3040-\u30ff\u31f0-\u31ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff'
+_CJK = re.compile(f'[{_CJK_RANGES}]')
 _MARKS = re.compile(r'[®™©℠]')
-_NONWORD = re.compile(r'[^0-9a-z\u3400-\u9fff\uf900-\ufaff]+')
+_NONWORD = re.compile(f'[^0-9a-z{_CJK_RANGES}]+')
 _COMMON = {
     'control', 'inside', 'journey', 'prey', 'rust', 'anthem', 'doom', 'fable', 'hades', 'limbo', 'braid',
     'portal', 'abzu', 'gris', 'tunic', 'celeste', 'spiritfarer', 'outlast', 'evolve', 'dishonored', 'quake',
@@ -90,7 +92,7 @@ def short_forms(name: str) -> list[str]:
 
 
 class Game:
-    __slots__ = ('gid', 'appid', 'en', 'zh', 'aliases', 'wiki_en', 'wiki_zh', 'plat', 'release', 'release_prec',
+    __slots__ = ('gid', 'appid', 'en', 'zh', 'aliases', 'trusted', 'wiki_en', 'wiki_zh', 'plat', 'release', 'release_prec',
                  'release_text', 'sources', 'img', 'ranks', 'big', 'sig', 'details', 'reviews', 'players',
                  'type_hint', 'watch', 'verified')
 
@@ -100,6 +102,7 @@ class Game:
         self.en = None
         self.zh = None
         self.aliases = set()
+        self.trusted = set()   # 手動簡稱表（aliases.json）裡的名字：兩個字的也照樣認（劍星、麥塊）
         self.wiki_en = None
         self.wiki_zh = None
         self.plat = set()
@@ -156,6 +159,9 @@ class Registry:
         zh = _clean_name(zh)
         names = [x for x in (en, zh) if x]
         g = self.find(appid=appid, names=names)
+        if g is not None and appid and g.appid and g.appid != int(appid):
+            # 同名但不同 appid 是兩款遊戲（2005 年和 2023 年的《惡靈古堡 4》），不能合成一款
+            g = None
         if g is None:
             gid = f'app:{appid}' if appid else 'w:' + key(en or zh or '')[:40]
             if gid in self.games:
@@ -199,6 +205,9 @@ class Registry:
             elif k2 == 'alias':
                 for a in v:
                     g.aliases.add(display(a))
+                    g.trusted.add(display(a))
+            elif k2 == 'trusted':
+                g.trusted.update(display(a) for a in v)
             elif hasattr(g, k2) and getattr(g, k2) in (None, False):
                 setattr(g, k2, v)
         for n in list(g.aliases):
@@ -210,6 +219,7 @@ class Registry:
     # ------------------------------------------------------------ 比對
     def build_matcher(self):
         cjk = {}
+        cjk2 = {}
         latin = {}
         single = {}
         for g in self.games.values():
@@ -221,9 +231,12 @@ class Registry:
                     continue
                 if has_cjk(n):
                     k = key(n)
-                    if len(k) >= 2:
+                    if len(k) >= 3 or (len(k) == 2 and n in g.trusted):
                         # 同一個中文名對到多款遊戲時，交給排名最高（資料最多）的那款
                         cjk.setdefault(k, set()).add(g.gid)
+                    elif len(k) == 2:
+                        # 兩個字的名字（師父、戰意）在一般句子裡太常出現，只有放在《》「」裡才認
+                        cjk2.setdefault(k, set()).add(g.gid)
                 else:
                     words = re.findall(r"[A-Za-z0-9']+", n)
                     k = key(n)
@@ -242,6 +255,7 @@ class Registry:
         for v in idx.values():
             v.sort(key=lambda x: -len(x[0]))
         self._cjk = idx
+        self._cjk2 = cjk2
         trie = {}
         for words, gids in latin.items():
             if not words:
@@ -299,6 +313,8 @@ class Registry:
             g = self.find(names=[m.group(1)])
             if g:
                 found.setdefault(g.gid, m.start())
+            elif key(m.group(1)) in getattr(self, '_cjk2', {}):
+                found.setdefault(self._pick(self._cjk2[key(m.group(1))]), m.start())
         tk = key(t)
         used = [False] * len(tk)
         for i in range(len(tk) - 1):
@@ -356,6 +372,7 @@ def apply_aliases(reg: Registry, entries: list[dict]):
                 break
         if g is None:
             continue
-        reg.upsert(appid=g.appid, en=g.en, zh=e.get('zh'), alias=e.get('aliases', []))
+        reg.upsert(appid=g.appid, en=g.en, zh=e.get('zh'), alias=e.get('aliases', []),
+                   trusted=[e['zh']] if e.get('zh') else None)
         if e.get('wiki_en') and not g.wiki_en:
             g.wiki_en = e['wiki_en']
