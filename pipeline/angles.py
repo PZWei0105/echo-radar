@@ -118,13 +118,26 @@ def sleeper(t):
     gb = t['game']
     n = gb['name']
     hook = (t.get('hooks') or [''])[0]
-    out = [_A('safe', f'《{n}》為什麼突然爆紅？', '先講它是什麼遊戲，再講紅的原因', hook or 'Steam 數據突然上升')]
+    old = t.get('phase') == 'old'
+    disc = gb.get('discount') or 0
+    why0 = (hook or 'Steam 數據突然上升') + (f'；目前特價 -{disc}%' if disc >= 30 else '')
+    if old:
+        out = [_A('safe', f'《{n}》為什麼又紅起來了？', '先講它是什麼遊戲、當年的評價，再講這次回溫的原因', why0)]
+    else:
+        out = [_A('safe', f'《{n}》為什麼突然爆紅？', '先講它是什麼遊戲，再講紅的原因', why0)]
     r = gb.get('ranks') or {}
+    # 「小團隊」要有證據：Steam 分類標成獨立遊戲才這樣講
+    indie = any(re.search(r'獨立|indie', x or '', re.I) for x in gb.get('genres') or [])
     if r.get('topsell_tw') and (r.get('topsell') or 999) > 40:
         out.append(_A('contrast', f'台灣人特別愛？《{n}》台灣熱銷第 {r["topsell_tw"]}，全球卻{"排不進前百" if not r.get("topsell") else "只有第 " + str(r["topsell"])}',
                       '找出台灣玩家特別買單的原因', '台灣區熱銷與全球熱銷的落差'))
+    elif old:
+        out.append(_A('contrast', f'老遊戲回春：《{n}》這次又紅，靠的是什麼？', '比較發售時跟現在的熱度，講清楚是特價、改版還是外部話題帶起來的', why0))
+    elif indie:
+        out.append(_A('contrast', f'獨立小品打爆大作？《{n}》爆紅的真正原因', '拿同期大作的數字對比，講清楚它贏在哪',
+                      'Steam 分類是獨立遊戲；' + (hook or '在線人數與熱銷排名')))
     else:
-        out.append(_A('contrast', f'小團隊打爆大作？《{n}》爆紅的真正原因', '拿同期大作的數字對比，講清楚它贏在哪', hook or '在線人數與熱銷排名'))
+        out.append(_A('contrast', f'跟同期新作比：《{n}》憑什麼擠進前排？', '拿同期上市遊戲的在線人數與評價對比，講清楚它贏在哪', hook or '在線人數與熱銷排名'))
     p = _price(gb)
     if p:
         out.append(_A('pz', f'NT${int(p):,} 跟風試玩《{n}》：值不值得？', '自己玩一段的真心話，順便自嘲錢包又破洞',

@@ -607,14 +607,22 @@ class Builder:
                 continue  # 剛上市的交給「新作首發」
             reasons = []
             g7, g1 = p.get('g7'), p.get('g1')
-            recent_release = bool(rd and (self.today - rd).days <= 90)
+            age = (self.today - rd).days if rd else None
+            recent_release = bool(age is not None and age <= 90)
+            # 「熱門新品」榜上剛發售一個月內的才算黑馬；上市一個多月還在榜上，多半是特價或大作本來就賣得好
+            fresh = bool(age is not None and age <= 30)
+            if age is not None:
+                old = age > 180
+            else:
+                yr = int(g.release[:4]) if (g.release or '')[:4].isdigit() else None
+                old = bool(yr and yr < self.today.year - 1)
             under_covered = summ['levels'].get('media', 0) < 30
             if p.get('now', 0) >= 3000 and g7 is not None and g7 >= 0.5 and p.get('points', 0) >= 24 * 5:
                 reasons.append(f"同時在線一週 {S.pct(g7)}")
             elif p.get('now', 0) >= 5000 and g1 is not None and g1 >= 0.6 and p.get('points', 0) >= 20:
                 reasons.append(f"同時在線一天 {S.pct(g1)}")
             tr = g.ranks.get('trending')
-            if tr and tr <= 10 and under_covered and recent_release:
+            if tr and tr <= 10 and under_covered and fresh:
                 reasons.append(f'Steam 熱門新品第 {tr}，但媒體還很少報')
             ts = g.ranks.get('topsell_tw')
             if ts and ts <= 12 and (g.ranks.get('topsell') or 999) > 60 and recent_release:
@@ -639,9 +647,11 @@ class Builder:
             cards = S.station_cards(g, summ)
             demand, dwhy, glob, tw = self._demand_from_summary(summ)
             dwhy = reasons + dwhy
-            title = f'《{g.name}》突然爆紅：{reasons[0]}'
+            # 上市半年以上的老遊戲是「又紅起來」，不是「突然爆紅」
+            title = f'《{g.name}》又紅起來了：{reasons[0]}' if old else f'《{g.name}》突然爆紅：{reasons[0]}'
             fsd = parse_iso(fs).astimezone(TW).date()
             t = {'id': tid, 'type': 'sleeper', 'pillar': 'spotlight', 'title': title, 'game': _game_brief(g),
+                 'phase': 'old' if old else 'new',
                  'facts': _game_facts(g) + _stories_facts(m.get('stories', []), 3),
                  'timeline': _timeline(m.get('stories', [])),
                  'window': {'kind': 'decay', 'open': fsd.isoformat(), 'publish_by': (fsd + dt.timedelta(days=5)).isoformat(),
