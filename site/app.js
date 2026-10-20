@@ -252,9 +252,10 @@ function renderEcho() {
   const short = (t) => esc(t.game ? `《${t.game.name}》` : t.title.split('：')[0]);
   if (urgent.length || late.length) {
     al.hidden = false;
-    const a = urgent.length ? `<b>今天要開工：${urgent.length} 題</b>（${urgent.slice(0, 3).map(short).join('、')}）` : '';
-    const b = late.length ? `<b>${urgent.length ? '另外' : ''}${late.length} 題時間很趕</b>（${late.slice(0, 3).map(short).join('、')}）` : '';
-    al.innerHTML = `<span aria-hidden="true">⚠</span><span>${[a, b].filter(Boolean).join('；')}</span>`;
+    const a = urgent.length ? `<b>今天要開工 ${urgent.length} 題</b>` : '';
+    const b = late.length ? `${urgent.length ? '，另外 ' : ''}<b>${late.length} 題時間很趕</b>` : '';
+    const names = [...urgent, ...late].slice(0, 2).map(short).join('、');
+    al.innerHTML = `<span aria-hidden="true">⚠</span><span>${a}${b}。${names} 等。<button type="button" class="linkbtn" data-urgent>看是哪些</button></span>`;
   } else al.hidden = true;
 
   $('#top').innerHTML = S.top.map((t, i) => `
@@ -789,6 +790,7 @@ document.addEventListener('click', async (e) => {
   if (d.topic) { openTopic(d.topic); return; }
   if (d.href) { window.open(d.href, '_blank', 'noopener'); return; }
   if (d.filter) { S.filter = d.filter; renderList(); return; }
+  if ('urgent' in d) { S.filter = 'all'; S.sort = 'due'; go('list'); const so = $('#sort'); if (so) so.value = 'due'; return; }
   if ('close' in d) { closeSheet(); return; }
   if (d.back) { openTopic(d.back); return; }
   if (d.goKey !== undefined) { closeSheet(); go('set'); setTimeout(() => { const k = $('#keygroup'); if (k) k.scrollIntoView({ behavior: 'smooth' }); }, 60); return; }

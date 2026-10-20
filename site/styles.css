@@ -109,6 +109,7 @@ a { color: var(--e2); text-underline-offset: 3px; }
   background: color-mix(in srgb, var(--warn) 9%, var(--deep)); font-size: 14px;
 }
 .alert b { color: #ffd3cf; }
+.linkbtn { margin-left: 4px; padding: 0; border: 0; background: none; color: var(--e2); text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
 
 /* 本週該拍 */
 .top { list-style: none; margin: 0; padding: 0; counter-reset: rk; }

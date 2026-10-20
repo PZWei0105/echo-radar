@@ -787,6 +787,7 @@ class Builder:
         fsd = parse_iso(fs).astimezone(TW).date() if parse_iso(fs) else self.today
         pub = fsd + dt.timedelta(days=3 if kind != 'showcase' else 2)
         t = {'id': tid, 'type': kind, 'pillar': pillar, 'title': title, 'issue': all_cats, 'issue_label': label,
+             'product': gkey[2:] if gkey.startswith('p:') else None,
              'game': _game_brief(g) if g else None, 'facts': _stories_facts(stories, 6) + (_game_facts(g)[:3] if g else []),
              'timeline': _timeline(stories),
              'window': {'kind': 'decay', 'open': fsd.isoformat(), 'publish_by': pub.isoformat(),

@@ -139,7 +139,7 @@ _ISSUE_CON = {
     'layoff': ('又一間工作室倒下：問題出在哪？', '整理這幾年的作品與銷量，講清楚是誰做錯決定'),
     'monet': ('內購吃相：這次哪裡踩線？', '列出付費設計，跟同類遊戲比'),
     'ownership': ('你買的遊戲真的是你的嗎？', '整理下架／停服的來龍去脈與玩家能做什麼'),
-    'backlash': ('負評轟炸是玩家任性，還是官方活該？', '把玩家的不滿一條條對照官方說法'),
+    'backlash': ('玩家罵的跟官方說的，差在哪？', '把玩家的不滿一條條對照官方說法，給出有立場的結論'),
     'legal': ('法律要管遊戲了？會怎麼影響玩家', '講法條重點與時程，不講政治立場'),
     'labor': ('做遊戲的人在抗爭：玩家該在意嗎？', '整理訴求與公司回應'),
     'ai': ('AI 做的遊戲你會買嗎？', '整理這次爭議的事實，再講玩家真正在意的點'),
@@ -149,39 +149,76 @@ _ISSUE_CON = {
 }
 
 
+def _subject(t):
+    """角度標題裡要講清楚在講誰：有遊戲就用《遊戲名》，硬體用產品名；都沒有而且題目太長就不加（題目會寫在企劃包裡）。"""
+    gb = t.get('game')
+    if gb:
+        return f'《{gb["name"]}》'
+    if t.get('product'):
+        return t['product']
+    head = re.split(r'[：:，,]', t['title'])[0]
+    return head if len(head) <= 12 else None
+
+
 def issue(t):
     short = t['title']
     cats = t.get('issue') or []
     c = cats[0] if cats else 'backlash'
+    gb = t.get('game')
+    subj = _subject(t)
+    top = _ptt_top(t)
+    if t['id'].endswith(':reviews') and gb:
+        out = [_A('safe', f'{subj}為什麼評價崩盤？一次看懂', '玩家在氣什麼、官方怎麼回應、現在還值不值得買',
+                  (t.get('hooks') or ['近期評價大跌'])[0])]
+        out.append(_A('contrast', f'{subj}負評轟炸：玩家任性，還是官方活該？', '把玩家的不滿一條條對照官方說法，給出有立場的結論',
+                      (t.get('hooks') or ['近期評價大跌'])[0]))
+        gap = _tc_gap(gb)
+        if gap and gap[1] <= gap[0] - 10:
+            out.append(_A('pz', f'繁中玩家好評只剩 {gap[1]}%：台灣人在不滿什麼？', '翻繁中評論找台灣玩家的抱怨（翻譯、伺服器、價格、外掛）',
+                          f'Steam 全球 {gap[0]}% vs 繁中評論 {gap[1]}%'))
+        else:
+            out.append(_A('pz', f'{subj}還能不能買？台灣玩家的避雷指南', '用台灣售價與繁中評論給結論，順便自嘲「我的願望單也中槍」',
+                          '台灣觀眾最在意「到底能不能買」'))
+        return out
     out = [_A('safe', f'一次看懂：{short}', '時間線＋各方說法＋目前已知的事實', '多家媒體報導，資料完整')]
     con_t, con_h = _ISSUE_CON.get(c, _ISSUE_CON['backlash'])
-    gb = t.get('game')
-    prefix = f'《{gb["name"]}》' if gb else ''
-    out.append(_A('contrast', prefix + con_t, con_h, f'題材類型：{t.get("issue_label") or "產業事件"}',
-                  risk='只用有證據的內容，不碰傳聞與人身攻擊' if 'sensitive' in ' '.join(t.get('flags') or []) or c == 'culture' else None))
-    top = _ptt_top(t)
+    basis = (t.get('hooks') or [None])[0] or f'題材類型：{t.get("issue_label") or "產業事件"}'
+    out.append(_A('contrast', (f'{subj}{con_t}' if gb else f'{subj}：{con_t}') if subj else con_t, con_h, basis,
+                  risk='只用有證據的內容，不碰傳聞與人身攻擊' if c == 'culture' or '敏感題材' in (t.get('flags') or []) else None))
     if c == 'ownership':
-        out.append(_A('pz', '數位擁有權續集：又是誰把遊戲收走了？', '接續頻道上一支 Torres 法案影片，延續系列觀眾',
+        out.append(_A('pz', f'數位擁有權續集：{subj or "這次"}又是誰把遊戲收走了？', '接續頻道上一支 Torres 法案影片，延續系列觀眾',
                       '頻道已經做過數位擁有權題材，續集最容易帶回舊觀眾'))
     elif c == 'price' and gb and gb.get('price'):
         out.append(_A('pz', f'換算成台幣 NT${int(gb["price"]):,}：台灣玩家還買不買單？', '用台灣售價與薪水換算，自嘲錢包先投降',
                       f'Steam 台灣售價 {gb.get("price_text")}'))
     elif top and top.get('push', 0) >= 10:
-        out.append(_A('pz', 'PTT 鄉民怎麼看？台灣玩家反應＋我的立場', '整理 PTT 熱門推文，再講自己站哪邊（有立場，不裝中立）',
+        out.append(_A('pz', f'PTT 鄉民怎麼看{subj or "這件事"}？台灣玩家反應＋我的立場', '整理 PTT 熱門推文，再講自己站哪邊（有立場，不裝中立）',
                       f'PTT 相關討論最熱 {top["push"] if top["push"] < 100 else "爆"} 推'))
     else:
-        out.append(_A('pz', '台灣玩家該在意嗎？（我的錢包先發表意見）', '把國外的事拉回台灣玩家的角度：價格、中文、伺服器、會不會影響我們',
+        out.append(_A('pz', f'{subj + "，" if subj else ""}台灣玩家該在意嗎？（我的錢包先發表意見）', '把國外的事拉回台灣玩家的角度：價格、中文、伺服器、會不會影響我們',
                       '台灣媒體報得少，台灣視角就是差異化'))
     return out
 
 
+_HW_BIZ = re.compile(r'價|售|漲|降|銷|出貨|規格|上市|發表|price|sale|sold|spec|launch|ship', re.I)
+
+
 def hardware(t):
     short = t['title']
-    out = [_A('safe', f'一次看懂：{short}', '規格、價格、上市時間、跟上一代差多少', '多家媒體報導')]
-    out.append(_A('contrast', '對台灣玩家其實不划算？算給你看', '用台灣售價與實際遊戲需求算 CP 值', '硬體題觀眾最在意「值不值得」'))
-    out.append(_A('pz', '我的 RTX 5090 筆電 vs 新硬體：真的需要升級嗎？', '拿手上的筆電當對照組，自嘲「我已經升無可升」',
-                  '你手上有 RTX 5090 筆電可以實測', need='需要你用筆電實測錄影'))
-    return out
+    subj = _subject(t)
+    text = ' '.join([t['title']] + [f.get('v', '') for f in (t.get('facts') or [])[:3]])
+    if _HW_BIZ.search(text):
+        out = [_A('safe', f'一次看懂：{short}', '規格、價格、上市時間、跟上一代差多少', '多家媒體報導')]
+        out.append(_A('contrast', f'{subj or "新硬體"}對台灣玩家其實不划算？算給你看', '用台灣售價與實際遊戲需求算 CP 值', '硬體題觀眾最在意「值不值得」'))
+        out.append(_A('pz', f'我的 RTX 5090 筆電 vs {subj or "新硬體"}：真的需要升級嗎？', '拿手上的筆電當對照組，自嘲「我已經升無可升」',
+                      '你手上有 RTX 5090 筆電可以實測', need='需要你用筆電實測錄影'))
+        return out
+    # 不是新品或價格的硬體新聞（改裝、破解、驅動、技術）
+    return [
+        _A('safe', f'一次看懂：{short}', '這是什麼技術、誰做的、現在能不能用', '硬體技術新聞'),
+        _A('contrast', '這件事對一般玩家的真正影響是什麼？', '把技術名詞翻成白話：會不會讓遊戲更好玩、更便宜、更危險', '多數觀眾只想知道「跟我有沒有關係」'),
+        _A('pz', '用我的 RTX 5090 筆電試給你看', '能實測就實測，不能測就講清楚為什麼不建議跟著做', '你手上有 RTX 5090 筆電', need='需要你用筆電實測錄影'),
+    ]
 
 
 def showcase(t):

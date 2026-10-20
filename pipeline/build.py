@@ -107,11 +107,11 @@ def build_registry(fr, lists, mostplayed, spy, details_cache, user):
         g.verified = True
         g.type_hint = 'mostplayed'
     for k, v in (fr.get('names') or {}).items():
-        if not (v.get('en') or v.get('zh')):
+        # 只收玩真的對過 Steam 或中文維基的名字；沒對到的多半是翻譯時框起來的工作室、更新名稱
+        if not (v.get('en') or v.get('zh')) or v.get('via') not in ('steam', 'wiki'):
             continue
         g = reg.upsert(appid=v.get('appid'), en=v.get('en'), zh=v.get('zh'), source='forreal')
-        if v.get('via') in ('steam', 'wiki'):
-            g.verified = True
+        g.verified = True
     rel = fr.get('releases') or {}
     for x in ((rel.get('steam_upcoming') or {}).get('items') or []) + ((rel.get('steam_new') or {}).get('items') or []):
         g = reg.upsert(appid=x.get('appid'), zh=x.get('name'), source='steam',
