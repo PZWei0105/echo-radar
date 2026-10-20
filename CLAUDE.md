@@ -21,7 +21,8 @@
 - 雲端 Claude 工作環境連不到這些網站，要實測新來源就用 `probe`。
 
 ## 容易改壞的規則
-- App 會用使用者的方向設定重算分數：`topics.py` 的 `_deadline_timing`、`total`、`grade` 跟 `site/app.js` 的 `deadlineTiming`、`evaluate` 必須一模一樣（改一邊就要改另一邊）。等級照畫面上顯示的整數判斷。
+- App 會用使用者的方向設定重算分數：`topics.py` 的 `_deadline_timing`、`total`、`grade` 跟 `site/app.js` 的 `deadlineTiming`、`evaluate` 必須一模一樣（改一邊就要改另一邊）。等級照畫面上顯示的整數判斷。TOP 5 的挑法（`build.pick_top` 與 `evaluate` 最後一段）也一樣。
+- 新聞題（硬體、發表會、沒對到遊戲的爭議）的代號靠 `topics_seen.json` 裡記的報導 id 沿用；使用者的靜音、想拍、角度、筆記都掛在題目代號上，不要隨便改代號的編法。
 - 「已經做過」：檔期（events）與月份（months）一對一、永遠算；新聞關鍵字（keys）只看製作中或 30 天內上片的影片，更早的只提示「可以做續集」。
 - `config/keywords.json` 的英文詞會自動加上「前後不能接英數字」的邊界，要對複數或變化形就自己寫出來；`issue_priority` 決定一則新聞同時符合多個分類時用哪一個切角。
 - Steam 活動是太平洋時間早上 10 點開始，台灣是隔天凌晨 1 點：題目與預報一律用 `topics.ev_days` 換成台灣日期。
