@@ -25,6 +25,7 @@ LISTS = {
     'upcoming': 'filter=popularcomingsoon',   # 熱門即將推出
     'trending': 'filter=popularnew',          # 熱門新品
     'topsell': 'filter=globaltopsellers',     # 全球熱銷
+    'topsell_tw': 'filter=topsellers',        # 台灣區熱銷（cc=tw）
 }
 
 DETAILS_TTL_H = 20
@@ -196,6 +197,17 @@ def _summary(q: dict) -> dict | None:
             'desc': q.get('review_score_desc')}
 
 
+def _recent(rec: list) -> dict | None:
+    """最近 n 篇評論 → 好評率、每天幾篇（用最舊一篇到現在的時間算，評論很少的遊戲才不會被高估）。"""
+    if not rec:
+        return None
+    ups = sum(1 for x in rec if x.get('voted_up'))
+    ts = [x.get('timestamp_created') or 0 for x in rec]
+    span_d = max(0.25, (time.time() - min(ts)) / 86400)
+    return {'pct': round(100 * ups / len(rec)), 'n': len(rec), 'per_day': round(len(rec) / span_d, 1),
+            'span_d': round(span_d, 1)}
+
+
 def reviews(http, appids, cache: dict, health, budget: int = 40):
     """全球評價、最近 100 篇的好評率（抓負評潮）、繁中玩家評價。每 5.5 小時更新。"""
     t0 = now()
@@ -209,19 +221,15 @@ def reviews(http, appids, cache: dict, health, budget: int = 40):
                 break
             j = r.json() or {}
             allq = _summary(j.get('query_summary'))
-            rec = j.get('reviews') or []
-            recent = None
-            if rec:
-                ups = sum(1 for x in rec if x.get('voted_up'))
-                ts = [x.get('timestamp_created') or 0 for x in rec]
-                span_d = max(1e-3, (max(ts) - min(ts)) / 86400) if len(ts) > 1 else None
-                recent = {'pct': round(100 * ups / len(rec)), 'n': len(rec),
-                          'per_day': round(len(rec) / span_d, 1) if span_d else None,
-                          'span_d': round(span_d, 1) if span_d else None}
+            recent = _recent(j.get('reviews') or [])
             time.sleep(0.3)
-            r2 = http.get(REVIEWS.format(appid=a, lang='tchinese', n=0), timeout=25)
-            tc = _summary((r2.json() or {}).get('query_summary')) if r2.status_code == 200 else None
-            cache[str(a)] = {'at': iso(t0), 'all': allq, 'recent': recent, 'tc': tc}
+            r2 = http.get(REVIEWS.format(appid=a, lang='tchinese', n=100), timeout=25)
+            tc = tc_recent = None
+            if r2.status_code == 200:
+                j2 = r2.json() or {}
+                tc = _summary(j2.get('query_summary'))
+                tc_recent = _recent(j2.get('reviews') or [])
+            cache[str(a)] = {'at': iso(t0), 'all': allq, 'recent': recent, 'tc': tc, 'tc_recent': tc_recent}
             done += 1
         except Exception:  # noqa: BLE001
             errs += 1

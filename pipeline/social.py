@@ -111,3 +111,112 @@ def fetch_reddit(http, store: dict, health):
     cut = int(t0.timestamp()) - KEEP_DAYS * 86400
     for k in [k for k, v in store.items() if v.get('ts', 0) < cut]:
         del store[k]
+
+
+# ---------------------------------------------------------------- Reddit（RSS 版，JSON 會被擋）
+REDDIT_RSS = [('Games', 'https://www.reddit.com/r/Games/top/.rss?t=day'),
+              ('pcgaming', 'https://www.reddit.com/r/pcgaming/top/.rss?t=day')]
+
+
+def fetch_reddit_rss(http, store: dict, health):
+    """Reddit 每日熱門（RSS 依熱度排序，名次就是熱度）。兩個看板之間要隔幾秒，不然會被限流。"""
+    import feedparser
+    t0 = now()
+    ok_any, errs = False, []
+    for i, (sub, url) in enumerate(REDDIT_RSS):
+        if i:
+            time.sleep(4)
+        try:
+            r = http.get(url, bot=True, timeout=25, retries=0)
+            if r.status_code != 200:
+                raise RuntimeError(f'HTTP {r.status_code}')
+            d = feedparser.parse(r.content)
+            for rank, e in enumerate(d.entries, 1):
+                pid = (e.get('id') or e.get('link') or '').rsplit('/', 1)[-1] or e.get('link')
+                at = e.get('published') or e.get('updated')
+                old = store.get(pid) or {}
+                store[pid] = {'sub': sub, 't': e.get('title', ''), 'u': e.get('link'), 'rank': min(rank, old.get('rank', rank)),
+                              'at': at, 'seen': iso(t0), 'first': old.get('first') or iso(t0)}
+            ok_any = True
+        except Exception as e:  # noqa: BLE001
+            errs.append(f'{sub}: {str(e)[:60]}')
+    health['reddit'] = {'ok': ok_any, 'at': iso(t0), **({'err': '；'.join(errs)} if errs else {})}
+    cut = t0.timestamp() - KEEP_DAYS * 86400
+    for k in list(store):
+        tt = parse_iso(store[k].get('at')) or parse_iso(store[k].get('first'))
+        if not tt or tt.timestamp() < cut:
+            del store[k]
+
+
+# ---------------------------------------------------------------- Google 新聞（台灣繁中版）
+GNEWS = 'https://news.google.com/rss/search?q={q}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant'
+GNEWS_GENERAL = ['遊戲 when:2d', 'Steam when:2d', 'PS5 OR "Switch 2" OR Xbox when:2d', '電玩 when:2d']
+
+
+def _parse_gnews(content) -> list[dict]:
+    import feedparser
+    d = feedparser.parse(content)
+    out = []
+    for e in d.entries:
+        src = (e.get('source') or {}).get('title') or ''
+        title = e.get('title') or ''
+        if src and title.endswith(' - ' + src):
+            title = title[: -len(src) - 3]
+        try:
+            at = iso(parsedate_to_datetime(e.get('published')))
+        except (TypeError, ValueError):
+            at = None
+        out.append({'t': title.strip(), 'u': e.get('link'), 'src': src, 'at': at})
+    return out
+
+
+def fetch_gnews_general(http, health) -> list[dict]:
+    import urllib.parse
+    t0 = now()
+    items, errs = {}, []
+    for q in GNEWS_GENERAL:
+        try:
+            r = http.get(GNEWS.format(q=urllib.parse.quote(q)), timeout=25, retries=0)
+            if r.status_code != 200:
+                raise RuntimeError(f'HTTP {r.status_code}')
+            for it in _parse_gnews(r.content):
+                items.setdefault(it['u'], it)
+        except Exception as e:  # noqa: BLE001
+            errs.append(f'{q}: {str(e)[:40]}')
+        time.sleep(1.5)
+    health['gnews'] = {'ok': bool(items), 'n': len(items), 'at': iso(t0), **({'err': '；'.join(errs)} if errs else {})}
+    return list(items.values())
+
+
+def fetch_gnews_entities(http, targets: list[tuple], cache: dict, health, budget: int = 10, ttl_h: float = 3):
+    """targets: [(gid, [名稱…])]。每款熱門遊戲專門查一次台灣新聞（3 小時更新一次）。"""
+    import urllib.parse
+    from .util import hours_since
+    t0 = now()
+    done = 0
+    for gid, names in targets:
+        if done >= budget:
+            break
+        rec = cache.get(gid) or {}
+        if hours_since(rec.get('at'), t0) < ttl_h:
+            continue
+        names = [n for n in names if n and len(n) >= 2][:2]
+        if not names:
+            continue
+        q = ' OR '.join(f'"{n}"' for n in names) + ' when:3d'
+        try:
+            r = http.get(GNEWS.format(q=urllib.parse.quote(q)), timeout=25, retries=0)
+            if r.status_code != 200:
+                raise RuntimeError(f'HTTP {r.status_code}')
+            cache[gid] = {'at': iso(t0), 'q': q, 'items': _parse_gnews(r.content)[:30]}
+            done += 1
+        except Exception:  # noqa: BLE001
+            cache[gid] = {'at': iso(t0), 'q': q, 'items': rec.get('items') or [], 'err': True}
+        time.sleep(1.5)
+    keep = {g for g, _ in targets}
+    for k in list(cache):
+        if k not in keep and hours_since(cache[k].get('at'), t0) > 48:
+            del cache[k]
+    old = health.get('gnews') or {}
+    old['entity_queries'] = done
+    health['gnews'] = old

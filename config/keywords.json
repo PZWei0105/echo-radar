@@ -1,26 +1,382 @@
 {
- "note": "題目分類用的固定關鍵字（大小寫不拘）。同樣的新聞永遠得到同樣的判斷。",
+ "note": "題目分類用的固定關鍵字（大小寫不拘，可以寫正規表示式）。同樣的新聞永遠得到同樣的判斷。",
  "issue": {
-  "layoff":   {"label": "裁員／關工作室", "en": ["layoffs?", "laid off", "lays? off", "job cuts", "studio (?:closure|closes|closed|shut)", "shuts? down studio", "closes? (?:its )?studio", "shut(?:s|ting)? down"], "zh": ["裁員", "解散", "關閉工作室", "工作室關閉", "倒閉", "收掉"]},
-  "price":    {"label": "漲價／定價", "en": ["price (?:increase|hike|rise)", "raises? (?:the )?price", "\\$80", "\\$70 games?", "more expensive", "price cut"], "zh": ["漲價", "調漲", "售價", "定價", "降價"]},
-  "monet":    {"label": "內購／抽卡", "en": ["microtransactions?", "loot box(?:es)?", "pay[- ]to[- ]win", "battle pass", "monetization"], "zh": ["內購", "微交易", "付費抽", "開箱", "通行證"]},
-  "ownership":{"label": "數位擁有權／下架", "en": ["stop killing games", "digital ownership", "delist(?:ed|ing)?", "end of service", "servers? (?:shutdown|shutting down|going offline)", "always[- ]online", "\\bDRM\\b", "denuvo"], "zh": ["停服", "停止營運", "下架", "永久連線", "數位擁有", "關閉伺服器"]},
-  "backlash": {"label": "玩家反彈", "en": ["backlash", "review[- ]bomb(?:ed|ing)?", "boycott", "outrage", "controvers(?:y|ial)", "fans? (?:are )?(?:angry|furious|upset)", "petition", "refunds?"], "zh": ["負評", "洗負評", "炎上", "抵制", "爭議", "退款", "反彈", "玩家不滿", "連署"]},
-  "legal":    {"label": "法律／政策", "en": ["lawsuit", "sues?\\b", "sued", "court", "\\bFTC\\b", "regulat(?:or|ion)", "\\bban(?:ned|s)?\\b", "legislation", "\\bbill\\b", "congress", "senator", "representative"], "zh": ["訴訟", "提告", "起訴", "判決", "法案", "禁令", "監管", "立法"]},
-  "labor":    {"label": "勞動／工會", "en": ["union(?:ize|ized|s)?\\b", "strike", "crunch"], "zh": ["工會", "罷工", "過勞", "爆肝"]},
-  "ai":       {"label": "AI 生成爭議", "en": ["generative ai", "ai[- ]generated", "\\bAI art\\b", "\\bgen ?ai\\b"], "zh": ["AI 生成", "AI生成", "AI 繪圖", "生成式 AI", "生成式AI"]},
-  "culture":  {"label": "文化戰／DEI", "en": ["\\bDEI\\b", "\\bwoke\\b", "sweet baby", "censor(?:ed|ship)", "culture war"], "zh": ["政治正確", "審查", "和諧"]},
-  "deal":     {"label": "收購／併購", "en": ["acquir(?:e|es|ed|ing|ition)", "merger", "buyout", "takeover"], "zh": ["收購", "併購", "買下"]},
-  "delay":    {"label": "延期", "en": ["delay(?:ed|s)?\\b", "postpone(?:d)?", "pushed back", "pushed to 20"], "zh": ["延期", "延後", "跳票", "延至"]}
+  "layoff": {
+   "label": "裁員／關工作室",
+   "en": [
+    "layoffs?",
+    "laid off",
+    "lays? off",
+    "job cuts",
+    "studio (?:closure|closes|closed|shut)",
+    "studio (?:has )?(?:closed|shut down)",
+    "shuts? down (?:the )?studio",
+    "closes? (?:its )?studio",
+    "shut(?:s|ting)? down",
+    "closure",
+    "bankrupt(?:cy)?",
+    "goes? under"
+   ],
+   "zh": [
+    "裁員",
+    "解散",
+    "工作室.{0,8}關閉",
+    "開發商.{0,10}(?:關閉|破產|倒閉|停運)",
+    "倒閉",
+    "破產",
+    "停運",
+    "收掉"
+   ]
+  },
+  "price": {
+   "label": "漲價／定價",
+   "en": [
+    "price (?:increase|hike|rise)",
+    "raises? (?:the )?price",
+    "\\$80",
+    "\\$70 games?",
+    "more expensive",
+    "price cut"
+   ],
+   "zh": [
+    "漲價",
+    "調漲",
+    "售價",
+    "定價",
+    "降價"
+   ]
+  },
+  "monet": {
+   "label": "內購／抽卡",
+   "en": [
+    "microtransactions?",
+    "loot box(?:es)?",
+    "pay[- ]to[- ]win",
+    "battle pass",
+    "monetization"
+   ],
+   "zh": [
+    "內購",
+    "微交易",
+    "付費抽",
+    "開箱",
+    "通行證"
+   ]
+  },
+  "ownership": {
+   "label": "數位擁有權／下架",
+   "en": [
+    "stop killing games",
+    "digital ownership",
+    "delist(?:ed|ing)?",
+    "end of service",
+    "servers? (?:shutdown|shutting down|going offline)",
+    "always[- ]online",
+    "\\bDRM\\b",
+    "denuvo"
+   ],
+   "zh": [
+    "停服",
+    "停止營運",
+    "下架",
+    "永久連線",
+    "數位擁有",
+    "關閉伺服器"
+   ]
+  },
+  "backlash": {
+   "label": "玩家反彈",
+   "en": [
+    "backlash",
+    "review[- ]bomb(?:ed|ing)?",
+    "boycott",
+    "outrage",
+    "controvers(?:y|ial)",
+    "fans? (?:are )?(?:angry|furious|upset)",
+    "petition",
+    "refunds?"
+   ],
+   "zh": [
+    "負評",
+    "洗負評",
+    "炎上",
+    "抵制",
+    "爭議",
+    "退款",
+    "反彈",
+    "玩家不滿",
+    "連署"
+   ]
+  },
+  "legal": {
+   "label": "法律／政策",
+   "en": [
+    "lawsuit",
+    "sues?\\b",
+    "sued",
+    "court",
+    "\\bFTC\\b",
+    "regulat(?:or|ion)",
+    "\\bban(?:ned|s)?\\b",
+    "legislation",
+    "\\bbill\\b",
+    "congress",
+    "senator",
+    "representative"
+   ],
+   "zh": [
+    "訴訟",
+    "提告",
+    "起訴",
+    "判決",
+    "法案",
+    "禁令",
+    "監管",
+    "立法"
+   ]
+  },
+  "labor": {
+   "label": "勞動／工會",
+   "en": [
+    "union(?:ize|ized|s)?\\b",
+    "strike",
+    "crunch"
+   ],
+   "zh": [
+    "工會",
+    "罷工",
+    "過勞",
+    "爆肝"
+   ]
+  },
+  "ai": {
+   "label": "AI 生成爭議",
+   "en": [
+    "generative ai",
+    "ai[- ]generated",
+    "\\bAI art\\b",
+    "\\bgen ?ai\\b"
+   ],
+   "zh": [
+    "AI 生成",
+    "AI生成",
+    "AI 繪圖",
+    "生成式 AI",
+    "生成式AI"
+   ]
+  },
+  "culture": {
+   "label": "文化戰／DEI",
+   "en": [
+    "\\bDEI\\b",
+    "\\bwoke\\b",
+    "sweet baby",
+    "censor(?:ed|ship)",
+    "culture war"
+   ],
+   "zh": [
+    "政治正確",
+    "審查",
+    "和諧"
+   ]
+  },
+  "deal": {
+   "label": "收購／併購",
+   "en": [
+    "acquir(?:e|es|ed|ing|ition)",
+    "merger",
+    "buyout",
+    "takeover"
+   ],
+   "zh": [
+    "收購",
+    "併購",
+    "買下"
+   ]
+  },
+  "delay": {
+   "label": "延期",
+   "en": [
+    "delay(?:ed|s)?\\b",
+    "postpone(?:d)?",
+    "pushed back",
+    "pushed to 20"
+   ],
+   "zh": [
+    "延期",
+    "延後",
+    "跳票",
+    "延至"
+   ]
+  }
  },
- "sensitive": {"en": ["\\bDEI\\b", "\\bwoke\\b", "harass", "assault", "abuse", "death", "dies\\b", "died", "cancer", "politic", "election", "trump", "gender", "racis", "lawsuit"], "zh": ["騷擾", "性別", "種族", "政治", "過世", "病逝", "癌", "確診", "訴訟"]},
+ "sensitive": {
+  "en": [
+   "\\bDEI\\b",
+   "\\bwoke\\b",
+   "harass",
+   "assault",
+   "abuse",
+   "death",
+   "dies\\b",
+   "died",
+   "cancer",
+   "politic",
+   "election",
+   "trump",
+   "gender",
+   "racis",
+   "lawsuit"
+  ],
+  "zh": [
+   "騷擾",
+   "性別",
+   "種族",
+   "政治",
+   "過世",
+   "病逝",
+   "癌",
+   "確診",
+   "訴訟"
+  ]
+ },
  "hardware": {
-  "en": ["\\bGPU\\b", "graphics card", "\\bRTX\\b", "GeForce", "Radeon", "\\bRDNA\\b", "\\bCPU\\b", "Ryzen", "Core Ultra", "\\bDLSS\\b", "\\bFSR\\b", "frame gen", "\\bVRAM\\b", "\\bDRAM\\b", "memory price", "RAM price", "\\bSSD\\b", "Steam Machine", "Steam Deck", "Steam Frame", "Switch 2", "PS5 Pro", "\\bPS6\\b", "PlayStation 6", "next[- ]gen Xbox", "Xbox Ally", "ROG Ally", "Legion Go", "handheld", "console price", "\\bOLED\\b", "monitor", "laptop", "\\bNPU\\b"],
-  "zh": ["顯卡", "顯示卡", "處理器", "記憶體", "掌機", "主機漲價", "新主機", "次世代", "規格", "效能", "筆電", "螢幕", "硬碟", "跑分"]
+  "strong_en": [
+   "\\bGPU\\b",
+   "graphics card",
+   "\\bRTX\\b",
+   "GeForce",
+   "Radeon",
+   "\\bRDNA\\b",
+   "\\bDLSS\\b",
+   "\\bFSR\\b",
+   "frame gen",
+   "\\bVRAM\\b",
+   "DRAM",
+   "memory prices?",
+   "RAM prices?",
+   "Steam Machine",
+   "Steam Deck",
+   "Steam Frame",
+   "\\bPS6\\b",
+   "PlayStation 6",
+   "PS5 Pro",
+   "next[- ]gen Xbox",
+   "Xbox Ally",
+   "ROG Ally",
+   "Legion Go",
+   "handheld",
+   "gaming laptop",
+   "gaming PC",
+   "console prices?"
+  ],
+  "strong_zh": [
+   "顯卡",
+   "顯示卡",
+   "掌機",
+   "記憶體.{0,4}(?:漲|價)",
+   "主機.{0,4}漲價",
+   "次世代主機",
+   "電競筆電"
+  ],
+  "platform_en": [
+   "Switch 2",
+   "Xbox Series",
+   "\\bPS5\\b",
+   "PlayStation 5"
+  ],
+  "platform_zh": [
+   "Switch 2",
+   "PS5",
+   "Xbox"
+  ],
+  "context_en": [
+   "price",
+   "sales",
+   "sold",
+   "units",
+   "spec",
+   "teardown",
+   "hardware",
+   "shipments?",
+   "\\$\\d"
+  ],
+  "context_zh": [
+   "售價",
+   "價格",
+   "漲價",
+   "降價",
+   "銷量",
+   "賣出",
+   "出貨",
+   "規格",
+   "拆解",
+   "硬體"
+  ]
  },
  "showcase": {
-  "en": ["Nintendo Direct", "State of Play", "Xbox Games Showcase", "Partner Preview", "Developer Direct", "Summer Game Fest", "Opening Night Live", "Game Awards", "Tokyo Game Show", "Ubisoft Forward", "PC Gaming Show", "showcase", "Direct\\b"],
-  "zh": ["直面會", "發表會", "遊戲大獎", "直播發表", "展前直播"]
+  "en": [
+   "Nintendo Direct",
+   "State of Play",
+   "Xbox Games Showcase",
+   "Partner Preview",
+   "Developer Direct",
+   "Summer Game Fest",
+   "Opening Night Live",
+   "Game Awards",
+   "Tokyo Game Show",
+   "Ubisoft Forward",
+   "PC Gaming Show",
+   "Gamescom",
+   "Day of the Devs"
+  ],
+  "zh": [
+   "任天堂直面會",
+   "直面會",
+   "遊戲大獎",
+   "電玩展",
+   "遊戲發表會"
+  ]
  },
- "mobile_only_hint": {"en": ["gacha", "mobile game", "iOS and Android", "Android and iOS", "pre-registration"], "zh": ["手遊", "事前登錄", "抽卡", "卡池", "開服"]}
+ "mobile_only_hint": {
+  "en": [
+   "gacha",
+   "mobile game",
+   "iOS and Android",
+   "Android and iOS",
+   "pre-registration"
+  ],
+  "zh": [
+   "手遊",
+   "事前登錄",
+   "抽卡",
+   "卡池",
+   "開服"
+  ]
+ },
+ "gaming": {
+  "en": [
+   "\\bgames?\\b",
+   "gaming",
+   "gamers?",
+   "Steam",
+   "PlayStation",
+   "Xbox",
+   "Nintendo",
+   "\\bSwitch\\b",
+   "console",
+   "esports",
+   "game studio",
+   "game developer"
+  ],
+  "zh": [
+   "遊戲",
+   "玩家",
+   "電玩",
+   "主機",
+   "電競",
+   "Steam",
+   "任天堂"
+  ]
+ }
 }
