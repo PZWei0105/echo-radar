@@ -132,9 +132,13 @@ def _langs(raw: str) -> dict:
 
 def _gpu_hint(req_html: str) -> str | None:
     """推薦配備裡的顯示卡（用來判斷「拿 5090 筆電實測」有沒有看頭）。"""
-    t = re.sub(r'<[^>]+>', ' ', req_html or '')
-    m = re.search(r'(?:顯示卡|Graphics)\s*[:：]?\s*([^\n]{3,80})', t)
-    return m.group(1).strip()[:80] if m else None
+    for li in re.findall(r'<li>(.*?)</li>', req_html or '', re.S | re.I):
+        text = re.sub(r'<[^>]+>', ' ', li)
+        text = re.sub(r'[®™©]', '', text)
+        m = re.match(r'\s*(?:顯示卡|Graphics|Video Card)\s*[:：]\s*(.+)', text, re.I)
+        if m:
+            return re.sub(r'\s+', ' ', m.group(1)).strip()[:90]
+    return None
 
 
 def trim_details(d: dict) -> dict:
@@ -238,18 +242,23 @@ def reviews(http, appids, cache: dict, health, budget: int = 40):
                                'at': iso(t0), **({'err': f'{errs} 次失敗'} if errs else {})}
 
 
-def players(http, appids, hist: dict, health, budget: int = 120):
-    """同時在線人數，每輪記一筆（保留 14 天）。"""
+def players(http, appids, hist: dict, health, budget: int = 120, skip: dict | None = None):
+    """同時在線人數，每輪記一筆（保留 14 天）。查不到人數的遊戲（還沒上市、沒有統計）記在 skip，一天內不再查。"""
     t0 = now()
     stamp = int(t0.timestamp())
     done = errs = 0
-    for a in appids[:budget]:
+    skip = skip if skip is not None else {}
+    for k in [k for k, v in skip.items() if stamp - v > 86400]:
+        del skip[k]
+    for a in [a for a in appids if str(a) not in skip][:budget]:
         try:
-            d = http.json(PLAYERS.format(appid=a), timeout=15, retries=0)
-            n = (d.get('response') or {}).get('player_count')
+            r = http.get(PLAYERS.format(appid=a), timeout=15, retries=0)
+            n = ((r.json() or {}).get('response') or {}).get('player_count') if r.status_code == 200 else None
             if n is not None:
                 hist.setdefault(str(a), []).append([stamp, int(n)])
                 done += 1
+            else:
+                skip[str(a)] = stamp
         except Exception:  # noqa: BLE001
             errs += 1
         time.sleep(0.08)

@@ -96,6 +96,7 @@ def pageviews(http, pages, pv: dict, health, budget: int = 260):
     end = today - dt.timedelta(days=1)
     start = today - dt.timedelta(days=35)
     done = errs = missing = 0
+    codes = {}
     for proj, title in pages:
         if done + errs >= budget:
             break
@@ -106,7 +107,7 @@ def pageviews(http, pages, pv: dict, health, budget: int = 260):
         url = PV.format(proj=proj, title=urllib.parse.quote(title, safe=''),
                         start=start.strftime('%Y%m%d'), end=end.strftime('%Y%m%d'))
         try:
-            r = http.get(url, bot=True, timeout=20, retries=0)
+            r = http.get(url, bot=True, timeout=20, retries=1)
             if r.status_code == 404:
                 pv[key] = {'fetched': today.isoformat(), 'days': {}}
                 missing += 1
@@ -114,6 +115,7 @@ def pageviews(http, pages, pv: dict, health, budget: int = 260):
                 continue
             if r.status_code != 200:
                 errs += 1
+                codes[r.status_code] = codes.get(r.status_code, 0) + 1
                 continue
             days = {}
             for it in r.json().get('items') or []:
@@ -123,14 +125,14 @@ def pageviews(http, pages, pv: dict, health, budget: int = 260):
             done += 1
         except Exception:  # noqa: BLE001
             errs += 1
-        time.sleep(0.05)
+        time.sleep(0.12)
     # 只保留還在追蹤的條目，避免越存越多
     keep = {f'{p}|{t}' for p, t in pages}
     for k in list(pv):
         if k not in keep:
             del pv[k]
     health['wiki_pageviews'] = {'ok': done > 0 or errs == 0, 'n': done, 'missing': missing,
-                                'at': iso(t0), **({'err': f'{errs} 次失敗'} if errs else {})}
+                                'at': iso(t0), **({'err': f'{errs} 次失敗 {codes}'} if errs else {})}
 
 
 def pv_stats(rec: dict | None) -> dict | None:

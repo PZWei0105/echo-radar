@@ -71,7 +71,10 @@ def _deadline_timing(today, open_d, start_by, publish_by, close):
     if publish_by and today > publish_by:
         return 45, f'最佳上架日 {md(publish_by)} 已過，現在補拍還來得及到 {md(close)}'
     if d < 0:
-        return 96, f'已經該開工了，最晚 {md(publish_by)}（週{wd(publish_by)}）要上架'
+        left = (publish_by - today).days
+        if left <= 0:
+            return 72, '今天就是最後上架日，趕不上就換成下一階段的角度'
+        return 88, f'時間很趕：最晚 {md(publish_by)}（週{wd(publish_by)}）要上架，只剩 {left} 天'
     if d == 0:
         return 100, f'今天就要開工，{md(publish_by)}（週{wd(publish_by)}）前上架'
     if d <= 2:
@@ -184,12 +187,26 @@ def _why_now(cards: list[dict], timing_text: str, limit=2) -> str:
     rest = [c for c in cards if (c.get('text') or '').startswith('（')]
     picks = (sorted(own, key=lambda c: (c.get('up', False), c.get('level', 0)), reverse=True)
              + sorted(rest, key=lambda c: c.get('level', 0), reverse=True))[:limit]
-    parts = [c['text'].split('：')[0] if c['id'] in ('gnews', 'reddit') else c['text'] for c in picks]
+    def short(c):
+        t = c['text'].split('：')[0] if c['id'] in ('gnews', 'reddit', 'ptt') else c['text']
+        bits = t.split('、')
+        return '、'.join(bits[:2])
+    parts = [short(c) for c in picks]
     parts = [p for p in parts if p]
     s = '；'.join(parts)
     if timing_text:
         s = (s + '。' if s else '') + timing_text
     return s
+
+
+_GPU_TAIL = re.compile(r'\s{2,}|\s(?:網路|儲存空間|音效卡|DirectX|其他|附註|額外|Network|Storage|Sound|Additional)\b.*$')
+
+
+def _gpu(text):
+    if not text:
+        return None
+    t = re.sub(r'[®™©]', '', text)
+    return _GPU_TAIL.split(t)[0].strip(' /，,') or None
 
 
 def _game_brief(g) -> dict:
@@ -204,7 +221,7 @@ def _game_brief(g) -> dict:
         'plat': plat, 'tc': langs.get('tc'), 'tc_voice': langs.get('tc_voice'), 'sc': langs.get('sc'),
         'price': det.get('price'), 'price_text': det.get('price_text'), 'discount': det.get('discount'),
         'genres': det.get('genres') or [], 'dev': det.get('dev') or [], 'pub': det.get('pub') or [],
-        'desc': det.get('desc'), 'gpu': det.get('gpu'), 'movies': det.get('movies'), 'demo': det.get('demo'),
+        'desc': det.get('desc'), 'gpu': _gpu(det.get('gpu')), 'movies': det.get('movies'), 'demo': det.get('demo'),
         'free': det.get('free'), 'meta': det.get('meta'),
         'reviews': rv.get('all'), 'recent': rv.get('recent'), 'tc_reviews': rv.get('tc'), 'tc_recent': rv.get('tc_recent'),
         'players': g.players, 'ranks': dict(g.ranks),
@@ -230,20 +247,20 @@ def _game_facts(g) -> list[dict]:
                       'src': 'Steam 商店頁語言列表', 'u': store})
     rv = b['reviews'] or {}
     if rv.get('n'):
-        v = f"{rv.get('desc') or ''} {rv.get('pct')}%（{S.fmt_num(rv['n'])} 篇）"
+        v = f"{rv.get('desc') or ''} {rv.get('pct')}%（{S.unit(rv['n'], '篇')}）"
         rc = b['recent'] or {}
         if rc.get('n'):
             v += f"；最近 {rc['n']} 篇 {rc['pct']}%"
         facts.append({'k': 'Steam 評價', 'v': v.strip(), 'src': 'Steam 評論統計', 'u': store})
     tc = b['tc_reviews'] or {}
     if tc.get('n'):
-        facts.append({'k': '繁中玩家評價', 'v': f"{tc.get('pct')}%（{S.fmt_num(tc['n'])} 篇繁中評論）",
+        facts.append({'k': '繁中玩家評價', 'v': f"{tc.get('pct')}%（{S.unit(tc['n'], '篇繁中評論')}）",
                       'src': 'Steam 評論統計（繁體中文）', 'u': store})
     p = b['players'] or {}
     if p.get('now'):
-        v = f"{S.fmt_num(p['now'])} 人"
+        v = S.unit(p['now'], '人')
         if p.get('peak14'):
-            v += f"（14 天內高點 {S.fmt_num(p['peak14'])}）"
+            v += f"（14 天內高點 {S.unit(p['peak14'], '人')}）"
         facts.append({'k': '同時在線', 'v': v, 'src': 'Steam 官方統計 API（雷達每小時記錄）', 'u': store})
     if b['gpu']:
         facts.append({'k': '建議顯卡', 'v': b['gpu'], 'src': 'Steam 商店頁建議配備', 'u': store})
@@ -282,6 +299,46 @@ def _timeline(stories, extra=()):
         seen.add(k)
         out.append(it)
     return out[-8:]
+
+
+_PRODUCTS = [
+    (r'\bPS6\b|PlayStation 6', 'PS6'), (r'PS5 Pro', 'PS5 Pro'), (r'Switch 2', 'Switch 2'),
+    (r'Steam Machine', 'Steam Machine'), (r'Steam Deck', 'Steam Deck'), (r'Steam Frame', 'Steam Frame'),
+    (r'Xbox Ally|ROG Ally', 'ROG Xbox Ally'), (r'Legion Go', 'Legion Go'), (r'next[- ]gen Xbox|次世代 ?Xbox', '次世代 Xbox'),
+    (r'RTX ?50\d0', 'RTX 50 系列'), (r'RTX ?40\d0', 'RTX 40 系列'), (r'Radeon|RX ?9\d{3}', 'Radeon'),
+    (r'DLSS ?\d?', 'DLSS'), (r'\bFSR ?\d?', 'FSR'), (r'DRAM|記憶體.{0,4}(?:漲|價)|memory price|RAM price', '記憶體價格'),
+]
+
+
+def _product(text: str):
+    for pat, name in _PRODUCTS:
+        if re.search(pat, text or '', re.I):
+            return 'p:' + name
+    return None
+
+
+def _merge_similar(groups: dict) -> dict:
+    """沒有對到遊戲的爭議新聞，標題很像（同一件事不同家報導、玩真的沒合併到）就合成一個題目。"""
+    keys = [k for k in groups if k[0] == 'issue' and not k[1].startswith(('app:', 'w:'))]
+    merged = {}
+    used = set()
+    for i, a in enumerate(keys):
+        if a in used:
+            continue
+        ta = ' '.join(filter(None, [groups[a][0][0].get('tz'), groups[a][0][0].get('t')]))
+        for b in keys[i + 1:]:
+            if b in used:
+                continue
+            tb = ' '.join(filter(None, [groups[b][0][0].get('tz'), groups[b][0][0].get('t')]))
+            if similar(groups[a][0][0].get('tz') or '', groups[b][0][0].get('tz') or '', True) >= 0.42 or \
+                    similar(groups[a][0][0].get('t') or '', groups[b][0][0].get('t') or '', False) >= 0.5:
+                groups[a] = groups[a] + groups[b]
+                used.add(b)
+        merged[a] = groups[a]
+    for k, v in groups.items():
+        if k not in used and k not in merged:
+            merged[k] = v
+    return merged
 
 
 # ------------------------------------------------------------------ 已經做過？
@@ -485,7 +542,7 @@ class Builder:
             summ = self.summ.get(g.gid)
             if not summ:
                 continue
-            notable = (g.ranks.get('wishlist', 999) <= 100 or g.ranks.get('upcoming', 999) <= 40 or g.big
+            notable = (g.ranks.get('wishlist', 999) <= 80 or g.ranks.get('upcoming', 999) <= 12 or g.big
                        or g.ranks.get('topsell', 999) <= 40 or g.ranks.get('topsell_tw', 999) <= 25
                        or g.ranks.get('mostplayed', 999) <= 100 or summ['levels'].get('media', 0) >= 40
                        or summ['global'] >= 50 or summ['tw'] >= 40 or g.watch)
@@ -607,7 +664,8 @@ class Builder:
             n = int(s.get('n') or 1)
             official = 'official' in (s.get('flags') or [])
             gids = links.get(s['id']) or []
-            gaming = s.get('sec') == 'game' or bool(gids) or bool(self.gaming_re and self.gaming_re.search(title_text))
+            main_title = ' '.join(x for x in (s.get('t'), s.get('tz')) if x)
+            gaming = s.get('sec') == 'game' or bool(gids) or bool(self.gaming_re and self.gaming_re.search(main_title))
             hw = self._is_hardware(title_text, bool(gids))
             show = bool(self.show_re and self.show_re.search(title_text))
             if cats and gaming:
@@ -622,13 +680,14 @@ class Builder:
                 gkey = (gids[0] if gids else s['id']) + ':' + cats[0]
             elif hw and (n >= 2 or official or self.src.get(s.get('src'), {}).get('tier', 3) <= 2):
                 kind = 'hardware'
-                gkey = s['id']
+                gkey = _product(title_text) or s['id']
             elif show and (n >= 2 or official):
                 kind = 'showcase'
                 gkey = s['id']
             else:
                 continue
             groups.setdefault((kind, gkey), []).append((s, cats, gids, text))
+        groups = _merge_similar(groups)
         for (kind, gkey), items in groups.items():
             t = self._news_topic(kind, gkey, items, w)
             if t:

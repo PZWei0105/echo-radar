@@ -309,6 +309,12 @@ def fmt_num(n) -> str:
     return f'{int(round(n)):,}'
 
 
+def unit(n, u: str) -> str:
+    """「4.5 萬人次」「2,690 人次」：數字以萬、億結尾時單位直接接上。"""
+    t = fmt_num(n)
+    return t + u if t.endswith(('萬', '億')) else f'{t} {u}'
+
+
 def pct(g) -> str:
     return f'{round(g * 100):+d}%'
 
@@ -330,12 +336,13 @@ def station_cards(g, summ: dict) -> list[dict]:
     if m:
         srcs = {x['srcname'] for x in m['stories']}
         best = max(m['stories'], key=lambda x: (x['n'], x['official']))
-        add('media', f"{len(m['stories'])} 則新聞、最多 {best['n']} 家報同一件事" + ('，含官方消息' if m.get('official') else ''),
+        n_src = max(len(srcs), best['n'])
+        add('media', f"{len(m['stories'])} 則相關新聞、{n_src} 家媒體" + ('，含官方消息' if m.get('official') else ''),
             best.get('u'), {'srcs': sorted(srcs)[:6]})
     p = g.players or {}
     bits = []
     if p.get('now'):
-        t = f"同時在線 {fmt_num(p['now'])}"
+        t = f"同時在線 {unit(p['now'], '人')}"
         if p.get('g1') is not None and abs(p['g1']) >= 0.05:
             t += f"（24 小時 {pct(p['g1'])}）"
         elif p.get('g7') is not None and abs(p['g7']) >= 0.05:
@@ -350,9 +357,9 @@ def station_cards(g, summ: dict) -> list[dict]:
     for k, lab in (('wiki_en', '英文維基'), ('wiki_zh', '中文維基')):
         st = s.get(k)
         if st:
-            t = f"每天約 {fmt_num(st['avg7'])} 人次"
+            t = f"{lab}每天約 {unit(st['avg7'], '人次')}"
             if st.get('g7') is not None and abs(st['g7']) >= 0.1:
-                t += f"（週增減 {pct(st['g7'])}）"
+                t += f"（比上週 {pct(st['g7'])}）"
             add(k, t, st.get('url'))
     r = s.get('reddit')
     if r:
@@ -377,7 +384,7 @@ def station_cards(g, summ: dict) -> list[dict]:
     tc = (g.reviews or {}).get('tc') or {}
     tcr = (g.reviews or {}).get('tc_recent') or {}
     if tc.get('n'):
-        tw_bits.append(f"繁中評論 {fmt_num(tc['n'])} 篇、好評 {tc.get('pct')}%")
+        tw_bits.append(f"繁中評論 {unit(tc['n'], '篇')}、好評 {tc.get('pct')}%")
     if tcr.get('per_day') and tcr['per_day'] >= 1:
         tw_bits.append(f"最近每天約 {tcr['per_day']:g} 篇")
     if tw_bits and lv.get('steam_tw', 0) > 0:

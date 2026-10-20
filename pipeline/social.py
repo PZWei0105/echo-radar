@@ -119,13 +119,12 @@ REDDIT_RSS = [('Games', 'https://www.reddit.com/r/Games/top/.rss?t=day'),
 
 
 def fetch_reddit_rss(http, store: dict, health):
-    """Reddit 每日熱門（RSS 依熱度排序，名次就是熱度）。兩個看板之間要隔幾秒，不然會被限流。"""
+    """Reddit 每日熱門（RSS 依熱度排序，名次就是熱度）。連抓兩個看板會被限流，所以每小時輪流抓一個。"""
     import feedparser
     t0 = now()
     ok_any, errs = False, []
-    for i, (sub, url) in enumerate(REDDIT_RSS):
-        if i:
-            time.sleep(4)
+    pick = [REDDIT_RSS[t0.hour % len(REDDIT_RSS)]]
+    for i, (sub, url) in enumerate(pick):
         try:
             r = http.get(url, bot=True, timeout=25, retries=0)
             if r.status_code != 200:

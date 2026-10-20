@@ -7,6 +7,8 @@
 每個角度都附「為什麼」（用到哪個數字）；需要 PZ 自己玩過或親自到場的，標 need。
 規則固定，同樣的資料永遠得到同樣的角度。
 """
+import re
+
 from .signals import fmt_num
 
 
@@ -34,9 +36,11 @@ def _tc_gap(gb):
 
 
 def _heavy_gpu(gb):
-    g = (gb.get('gpu') or '').upper()
-    return any(x in g for x in ('RTX 40', 'RTX 50', 'RTX 30', 'RX 7', 'RX 9', '4070', '4080', '4090', '5070', '5080',
-                                '3070', '3080'))
+    """建議配備要中高階以上的顯卡（RTX 3070／4070／5070、RX 6800／7800 等級以上），或是售價 1,500 以上的大作。"""
+    g = (gb.get('gpu') or '').upper().replace(' ', '')
+    if re.search(r'RTX(30[789]0|40[789]0|50[6-9]0)|RX(6[89]\d0|7[789]\d0|90[67]0)', g):
+        return True
+    return (gb.get('price') or 0) >= 1500 and any(x in ' '.join(gb.get('genres') or []) for x in ('動作', '射擊', '角色扮演', '冒險'))
 
 
 def _ptt_top(t):
@@ -94,7 +98,8 @@ def launch(t):
                      'Steam 語言列表沒有繁體中文', need='需要你實際玩過一段'))
     if _heavy_gpu(gb):
         pz.append(_A('pz', f'RTX 5090 筆電全開實測：《{n}》吃不吃效能？', '實測幀數、畫質設定建議，順便自嘲「這台筆電比我的存款還值錢」',
-                     f'建議配備要 {gb.get("gpu")}', need='需要你用筆電實測錄影'))
+                     f'建議配備：{gb.get("gpu")}' if gb.get('gpu') else '大作上市，畫質與效能是玩家第一個問題',
+                     need='需要你用筆電實測錄影'))
     top = _ptt_top(t)
     if top and top.get('push', 0) >= 20:
         pz.append(_A('pz', f'PTT 鄉民最在意的《{n}》問題，我一次回答', '把 PTT 熱門討論整理成 QA，加上自己的立場',

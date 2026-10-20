@@ -1,1 +1,110 @@
-<!doctype html><title>回波</title>__BUILD__
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06111b">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="回波">
+<meta name="description" content="痞子葳的選題雷達：下一支影片拍什麼、為什麼是現在、怎麼切。">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; manifest-src 'self'; worker-src 'self'">
+<title>回波 選題雷達</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<link rel="stylesheet" href="styles.css?v=__BUILD__">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="bar">
+    <button class="brand" type="button" data-go="echo" aria-label="回波首頁">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="3" y="3" width="34" height="34" rx="5" class="m-out"/>
+        <rect x="12" y="12" width="16" height="16" rx="2.5" class="m-in"/>
+        <circle cx="20" cy="20" r="2.4" class="m-dot"/>
+      </svg>
+      <span class="brand-t">回波</span>
+    </button>
+    <div class="obs" id="obs" aria-live="polite">讀取觀測資料</div>
+    <button class="scan" id="scan" type="button" aria-label="立即掃描">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>
+      <span>掃描</span>
+    </button>
+  </header>
+
+  <main class="views">
+    <section class="view" id="v-echo" data-view="echo" aria-labelledby="t-echo">
+      <h1 class="sr" id="t-echo">回波</h1>
+      <div class="scope-wrap">
+        <canvas class="scope" id="scope" width="720" height="720" role="img" aria-label="選題雷達：越靠近中心越急，顏色越熱分數越高"></canvas>
+        <div class="sweep" aria-hidden="true"></div>
+        <div class="scope-tip" id="scope-tip" hidden></div>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span class="lg-t">回波強度</span>
+        <span class="lg-bar"></span>
+        <span class="lg-marks"><i style="left:46%">觀望</i><i style="left:58%">可拍</i><i style="left:70%">必拍</i></span>
+      </div>
+      <div class="alert" id="alert" hidden></div>
+      <h2 class="h2">本週該拍</h2>
+      <ol class="top" id="top"></ol>
+      <p class="foot" id="echo-foot"></p>
+    </section>
+
+    <section class="view" id="v-list" data-view="list" aria-labelledby="t-list" hidden>
+      <h1 class="h1" id="t-list">題庫</h1>
+      <div class="filters" id="filters" role="toolbar" aria-label="篩選"></div>
+      <div class="sortbar">
+        <label class="search"><span class="sr">搜尋題目</span><input id="q" type="search" placeholder="搜尋遊戲或題目" autocomplete="off"></label>
+        <select id="sort" aria-label="排序">
+          <option value="score">依總分</option>
+          <option value="due">依截止日</option>
+          <option value="new">新上榜</option>
+          <option value="demand">依需求</option>
+        </select>
+      </div>
+      <ul class="rows" id="rows"></ul>
+    </section>
+
+    <section class="view" id="v-cal" data-view="cal" aria-labelledby="t-cal" hidden>
+      <h1 class="h1" id="t-cal">預報</h1>
+      <p class="lede">未來 60 天的檔期、發售日，和每個題目的最晚開工日。</p>
+      <div class="cal" id="cal"></div>
+    </section>
+
+    <section class="view" id="v-plan" data-view="plan" aria-labelledby="t-plan" hidden>
+      <h1 class="h1" id="t-plan">企劃</h1>
+      <p class="lede">想拍的、在做的、上片的都在這裡。上片後回填觀看數，雷達會照各路線的成績調整契合度。</p>
+      <div id="plan"></div>
+    </section>
+
+    <section class="view" id="v-set" data-view="set" aria-labelledby="t-set" hidden>
+      <h1 class="h1" id="t-set">方向</h1>
+      <p class="lede">調整雷達怎麼排題目。改了馬上重排，不用等下一輪掃描。</p>
+      <div id="set"></div>
+    </section>
+  </main>
+
+  <nav class="tabs" aria-label="分頁">
+    <button type="button" data-go="echo" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12 19 6"/></svg><span>回波</span></button>
+    <button type="button" data-go="list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>題庫</span></button>
+    <button type="button" data-go="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>預報</span></button>
+    <button type="button" data-go="plan"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>企劃</span></button>
+    <button type="button" data-go="set"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/><circle cx="12" cy="12" r="2.2"/></svg><span>方向</span></button>
+  </nav>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title" hidden>
+  <div class="sheet-in" id="sheet-in"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="app.js?v=__BUILD__"></script>
+</body>
+</html>

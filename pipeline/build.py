@@ -61,6 +61,23 @@ def parse_release(text: str):
     return None, None
 
 
+def ensure_user_branch():
+    """App 的遙控鑰匙會把方向設定寫到 user 分支的 prefs.json；分支不存在時先建一個空的（已存在就絕不動它）。"""
+    try:
+        r = subprocess.run(['git', 'ls-remote', '--exit-code', 'origin', 'refs/heads/user'], cwd=ROOT,
+                           capture_output=True, text=True, timeout=60)
+        if r.returncode == 0:
+            return
+        if r.returncode != 2:
+            return  # 查不到是因為連線問題，不要冒險
+        path = gitstate.open_branch('user', '.user')
+        (path / 'prefs.json').write_text('{}', encoding='utf-8')
+        (path / 'README.md').write_text('回波 App 的方向設定（用遙控鑰匙同步）。請不要手動修改。\n', encoding='utf-8')
+        gitstate.save_branch('user', '.user', 'create user branch')
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
 def load_user(t0):
     """使用者在 App 存的方向設定（遙控鑰匙同步到 repo 的 user 分支），後台只用關注清單與靜音。"""
     try:
@@ -224,7 +241,8 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     players_hist = st.load('hist/players.json.gz', {})
     mp_ids = [x['appid'] for x in mostplayed]
     pl_ids = list(dict.fromkeys(mp_ids + released[:120]))
-    steam.players(http, pl_ids, players_hist, health, budget=200)
+    no_players = st.load('cache/noplayers.json', {})
+    steam.players(http, pl_ids, players_hist, health, budget=200, skip=no_players)
     for g in reg.games.values():
         if g.appid:
             if str(g.appid) in players_hist:
@@ -377,6 +395,7 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     st.save('cache/wikimap.json', wmap)
     st.save('cache/gnews.json.gz', gn_cache)
     st.save('hist/players.json.gz', players_hist)
+    st.save('cache/noplayers.json', no_players)
     st.save('hist/pv.json.gz', pv)
     st.save('hist/ranks.json.gz', hist_ranks)
     st.save('ptt.json.gz', ptt_store)
@@ -429,8 +448,11 @@ def build_calendar(cal_cfg, tlist, reg, notable_by_month, today, b):
                               'score': t['score'], 'grade': t['grade'], 'which': k})
     for ym, games in notable_by_month.items():
         for x in games[:40]:
+            g = reg.games.get(x['gid'])
+            strong = x['big'] or (x.get('w') or 999) <= 60 or (g and (g.ranks.get('upcoming', 999) <= 20 or g.watch)) \
+                or (x.get('score') or 0) >= 50
             d = parse_day(x['date']) if x.get('prec') == 'day' else None
-            if d and today - dt.timedelta(days=1) <= d <= horizon:
+            if strong and d and today - dt.timedelta(days=1) <= d <= horizon:
                 items.append({'date': d.isoformat(), 'kind': 'release', 'title': f'《{x["name"]}》發售', 'ref': x['gid'],
                               'big': x['big']})
     items.sort(key=lambda x: (x['date'], {'steam_sale': 0, 'steam_fest': 0, 'show': 0, 'retail': 1, 'release': 2,
@@ -469,6 +491,7 @@ def run(mode: str) -> bool:
     path = gitstate.open_branch('state', '.state')
     st = State(path)
     http = Http()
+    ensure_user_branch()
     user = load_user(t0)
     execute(http, st, t0, out / 'data', build_id, user)
     ok = gitstate.save_branch('state', '.state', f'state {iso(t0)}')
