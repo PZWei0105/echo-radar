@@ -12,7 +12,8 @@ import unicodedata
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # 中日韓文字：漢字、日文假名（ホームズ）、韓文。假名和韓文也要留著，不然「ホームズ奇譚」會只剩「奇譚」
-_CJK_RANGES = r'\u3040-\u30ff\u31f0-\u31ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff'
+# （片假名的中點「・」U+30FB 不算字：「真・三國無雙」要跟「真‧三國無雙」「真三國無雙」對得上）
+_CJK_RANGES = r'\u3040-\u309f\u30a1-\u30fa\u30fc-\u30ff\u31f0-\u31ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff'
 _CJK = re.compile(f'[{_CJK_RANGES}]')
 _MARKS = re.compile(r'[®™©℠]')
 _NONWORD = re.compile(f'[^0-9a-z{_CJK_RANGES}]+')
@@ -158,7 +159,14 @@ class Registry:
         en = _clean_name(en)
         zh = _clean_name(zh)
         names = [x for x in (en, zh) if x]
-        g = self.find(appid=appid, names=names)
+        # Steam 常把兩種語言的名字寫在一起（「アノマリス／ANOMALITH」）：一半是中日韓文、一半是英文時，
+        # 兩半也各自當別名，才對得上維基的「Anomalith」。兩半都是英文的（「Fate／stay night」）不拆。
+        parts = []
+        for n in names:
+            ps = [p.strip() for p in re.split(r'\s*／\s*|\s+/\s+', n) if p.strip()]
+            if len(ps) == 2 and has_cjk(ps[0]) != has_cjk(ps[1]):
+                parts += ps
+        g = self.find(appid=appid, names=names + parts)
         if g is not None and appid and g.appid and g.appid != int(appid):
             # 同名但不同 appid 是兩款遊戲（2005 年和 2023 年的《惡靈古堡 4》），不能合成一款
             g = None
@@ -186,6 +194,12 @@ class Registry:
             elif not g.en:
                 g.en = zh
                 g.aliases.add(zh)
+        for p in parts:
+            p = display(p)
+            if len(key(p)) >= 3:
+                g.aliases.add(p)
+                if not has_cjk(p) and (not g.en or has_cjk(g.en)):
+                    g.en = p
         if source:
             g.sources.add(source)
         for k2, v in kw.items():

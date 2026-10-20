@@ -258,6 +258,8 @@ def _game_brief(g) -> dict:
     plat = sorted(g.plat | ({'pc'} if g.appid else set()))
     return {
         'gid': g.gid, 'name': g.name, 'zh': g.zh, 'en': g.en, 'appid': g.appid, 'store': g.store_url,
+        # 其他叫法（MW4、現代戰爭 4…）：App 的關注清單用它來比對
+        'aliases': sorted(a for a in g.aliases if a and a not in (g.zh, g.en))[:8],
         'img': det.get('img') or g.img or (f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{g.appid}/header.jpg' if g.appid else None),
         'release': g.release, 'release_prec': g.release_prec, 'release_text': g.release_text or det.get('date_text'),
         'plat': plat, 'tc': langs.get('tc'), 'tc_voice': langs.get('tc_voice'), 'sc': langs.get('sc'),
@@ -367,7 +369,9 @@ def _product(title: str):
 
 
 _HW_FACETS = [
-    ('price', re.compile(r'價格|售價|定價|單價|價錢|漲價|降價|千元|萬元|美元|台幣|(?<![A-Za-z0-9])(?:prices?|pricing|costs?)(?![A-Za-z0-9])|\$\s?\d', re.I)),
+    # 價格要有「價格」這類字，或「付／花＋金額」；單純出現金額（「價值 47 萬美元的貨被偷」）不算
+    ('price', re.compile(r'價格|售價|定價|單價|價錢|漲價|降價|調價|要價|(?:支付|付|花).{0,6}(?:\$|美元|台幣|元)'
+                         r'|(?<![A-Za-z0-9])(?:prices?|pricing|priced|price tag)(?![A-Za-z0-9])|(?<![A-Za-z0-9])pay \$', re.I)),
     ('sales', re.compile(r'銷量|銷售|出貨|賣出|(?<![A-Za-z0-9])(?:sold|sales|units|shipped|shipments?)(?![A-Za-z0-9])', re.I)),
     ('spec', re.compile(r'規格|效能|跑分|(?<![A-Za-z0-9])(?:specs?|specifications?|benchmarks?|leaks?)(?![A-Za-z0-9])', re.I)),
 ]
@@ -582,6 +586,13 @@ class Builder:
         self.lead = int(cfg.get('lead_days', 3))
         self.user = user or {}
         self.topics = {}
+        # 新聞題的代號：上一輪的題目只要這輪還有同一篇報導，就沿用同一個代號
+        # （報導一篇篇過期，題目代號也不會跟著變；靜音、想拍、角度、筆記才不會掉）
+        self.story_tid = {}
+        for tid, rec in sorted(seen.items(), key=lambda kv: kv[1].get('first') or ''):
+            for x in rec.get('stories') or []:
+                self.story_tid.setdefault(x, tid)
+        self._claimed = set()
         self._compile_kw()
 
     # ---------------- 關鍵字
@@ -855,9 +866,10 @@ class Builder:
         for tid in [k for k in self.topics if k.endswith(':reviews')]:
             rv = self.topics.get(tid)
             gid = (rv.get('game') or {}).get('gid') if rv else None
-            if not gid:
+            if not gid or f'issue:{gid}:backlash' not in self.topics:
                 continue
-            for other in [k for k in self.topics if k != tid and k.startswith(f'issue:{gid}:')]:
+            # 只合併同一款遊戲的「玩家反彈」新聞題；裁員、延期這類別的事件照樣各自成題
+            for other in [f'issue:{gid}:backlash']:
                 ot = self.topics[other]
                 keep, drop = (rv, ot) if rv['score'] >= ot['score'] else (ot, rv)
                 seen_f = {(f.get('k'), f.get('v')) for f in keep.get('facts') or []}
@@ -941,20 +953,28 @@ class Builder:
         demand = clamp((1 - share) * glob + share * tw + min(12, 4 * n_rise))
         dwhy = [f'全球回波 {round(glob)}、台灣回波 {round(tw)}'] + ([f'{n_rise} 個測站同步升溫'] if n_rise else [])
         first = min((x['at'] for x in stories if x.get('at')), default=None)
-        # 題目代號用最早那篇報導，之後同一件事有新報導加入，代號也不會變（「首次出現時間」才算得準）
+        # 題目代號：對到遊戲的爭議題用遊戲＋分類；其他的沿用上一輪同一批報導的代號，沒有才用最早那篇報導新編一個
+        sids = [x[0]['id'] for x in items]
         anchor = min((x[0] for x in items), key=lambda s: s.get('at') or '9999')['id']
+        prefix = {'issue': 'issue:', 'hardware': 'hw:'}.get(kind, 'show:')
+        reuse = next((self.story_tid[x] for x in sids if x in self.story_tid
+                      and self.story_tid[x].startswith(prefix) and self.story_tid[x] not in self._claimed), None)
         if kind == 'issue':
-            tid = f'issue:{gkey}' if gkey.startswith(('app:', 'w:')) else f'issue:{anchor}:{gkey.rsplit(":", 1)[-1]}'
+            if gkey.startswith(('app:', 'w:')):
+                tid = f'issue:{gkey}'
+            else:
+                tid = reuse or f'issue:{anchor}:{gkey.rsplit(":", 1)[-1]}'
             half = 4
             pillar = 'issue'
         elif kind == 'hardware':
-            tid = f'hw:{anchor}'
+            tid = reuse or f'hw:{anchor}'
             half = 5
             pillar = 'hardware'
         else:
-            tid = f'show:{gkey}'
+            tid = reuse or f'show:{gkey}'
             half = 2.5
             pillar = 'season'
+        self._claimed.add(tid)
         fs = self.first_seen(tid, first)
         timing, ttext = _decay_timing(fs, half, n_rise >= 2, self.t0)
         done_text = zh_title + '\n' + (main.get('t') or '')
@@ -982,7 +1002,7 @@ class Builder:
              'ptt': ph, 'reddit': rh, 'flags': (['傳聞'] if rumor_only else []) + (['敏感題材'] if sensitive else []),
              'story_en': main.get('t') if main.get('lang') == 'en' else None,
              'summary': main.get('sz') or main.get('s'), 'done': _done_obj(done),
-             'demand_parts': {'global': round(glob), 'tw': round(tw)}, 'first_hint': first}
+             'demand_parts': {'global': round(glob), 'tw': round(tw)}, 'first_hint': first, 'story_ids': sids}
         return self._finish(t, cards, demand, dwhy, timing, ttext, fit, fit_why, ease, ease_why, w)
 
     # ---------------- Steam 負評潮

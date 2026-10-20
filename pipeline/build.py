@@ -368,6 +368,8 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
         rec = seen.get(t['id']) or {'first': t['first_seen']}
         rec['last'] = iso(t0)
         rec['best'] = max(rec.get('best', 0), t['score'])
+        if t.get('story_ids'):
+            rec['stories'] = t['story_ids'][:20]  # 下一輪用來沿用同一個題目代號
         seen[t['id']] = rec
     for k in list(seen):
         if hours_since(seen[k].get('last'), t0) > 21 * 24:
@@ -432,20 +434,33 @@ def prune(cache: dict, max_age_h: float, t0):
 
 
 def pick_top(tlist, n=5):
-    """本週 TOP 5：照總分挑，但同一條路線最多 2 個、同一種題目最多 2 個，避免整排都是同一類。
+    """本週 TOP 5（App 端的 evaluate 用同一套規則）：
+    1. 可拍以上（顯示 58 分以上）的題目照分數挑，同一條路線、同一種題目最多 2 個，避免整排都是同一類；
+    2. 還不滿 5 個，就讓被擋下來的可拍以上題目進來（同一條路線最多 3 個），不會讓 53 分的題目卡掉 78 分的；
+    3. 再不夠才用可拍以下的題目補（一樣最多 2 個）。
     頻道已經在做的題目不放進 TOP（還是會出現在題庫裡）。"""
+    pool = sorted((t for t in tlist if (t.get('done') or {}).get('status') not in ('done', 'making')),
+                  key=lambda t: -t['score'])
     out, by_p, by_t = [], {}, {}
-    for t in tlist:
-        if (t.get('done') or {}).get('status') in ('done', 'making'):
-            continue
-        if by_p.get(t['pillar'], 0) >= 2 or by_t.get(t['type'], 0) >= 2:
-            continue
-        out.append(t['id'])
+
+    def ok(t, cap):
+        return by_p.get(t['pillar'], 0) < cap and by_t.get(t['type'], 0) < cap
+
+    def take(t):
+        out.append(t)
         by_p[t['pillar']] = by_p.get(t['pillar'], 0) + 1
         by_t[t['type']] = by_t.get(t['type'], 0) + 1
-        if len(out) >= n:
-            break
-    return out
+
+    for strong, cap in ((True, 2), (True, 3), (False, 2)):
+        for t in pool:
+            if len(out) >= n:
+                break
+            if t in out or (strong and topics.shown(t['score']) < 58):
+                continue
+            if ok(t, cap):
+                take(t)
+    out.sort(key=lambda t: -t['score'])
+    return [t['id'] for t in out]
 
 
 def build_calendar(cal_cfg, tlist, reg, notable_by_month, today, b):

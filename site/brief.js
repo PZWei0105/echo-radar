@@ -111,7 +111,8 @@ const plain = (s) => String(s ?? '').replace(/[\r\n]+/g, ' ').replace(/`/g, "'")
 const q = (s) => `「${plain(s).replace(/[「」]/g, (c) => (c === '「' ? '『' : '』'))}」`;
 const cell = (s) => plain(s).replace(/\|/g, '／');
 // Markdown 連結只收 http(s)，網址裡的括號與空白要編碼，不然表格會斷掉
-const mdUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? plain(u).replace(/[()\s|]/g, (c) => encodeURIComponent(c)) : '');
+const URL_ESC = { '(': '%28', ')': '%29', '|': '%7C', ' ': '%20' };
+const mdUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? plain(u).replace(/[()|\s]/g, (c) => URL_ESC[c] || '%20') : '');
 
 export function makeBrief(t, angle, ctx) {
   const f = FORMATS[formatOf(t)];

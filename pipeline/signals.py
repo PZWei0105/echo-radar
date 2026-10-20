@@ -53,6 +53,29 @@ def story_texts(s: dict) -> list[str]:
     return [x for x in out if x]
 
 
+def _story_games(reg, s: dict) -> list[str]:
+    """一則新聞在講哪些遊戲：主標題（中英文）提到的一定算；玩真的合併進來的其他報導裡的遊戲，
+    要至少兩篇都提到才算。（「本週日本新作：《現代戰爭 4》《FF Resonance》…」這種清單文被併進
+    現代戰爭 4 的新聞時，FF Resonance 不會因此多一則報導。）"""
+    main = []
+    for tx in (s.get('t') or '', s.get('tz') or ''):
+        for g in reg.match(tx):
+            if g not in main:
+                main.append(g)
+    count, order = {}, []
+    for m in (s.get('m') or [])[:8]:
+        found = []
+        for tx in (m.get('t') or '', m.get('tz') or ''):
+            for g in reg.match(tx):
+                if g not in found:
+                    found.append(g)
+        for g in found:
+            count[g] = count.get(g, 0) + 1
+            if g not in order:
+                order.append(g)
+    return main + [g for g in order if g not in main and count[g] >= 2]
+
+
 def attach_news(reg, stories: list[dict], src_table: dict, t0):
     """每則新聞（玩真的已合併同一件事）→ 認出遊戲 → 累積到遊戲的 media 訊號。回傳 story id → gids。"""
     links = {}
@@ -60,11 +83,7 @@ def attach_news(reg, stories: list[dict], src_table: dict, t0):
         age = hours_since(s.get('up') or s.get('at'), t0)
         if age > 120:
             continue
-        gids = []
-        for tx in story_texts(s)[:6]:
-            for g in reg.match(tx):
-                if g not in gids:
-                    gids.append(g)
+        gids = _story_games(reg, s)
         if not gids and s.get('sz'):
             gids = reg.match(s['sz'])[:1]
         links[s['id']] = gids

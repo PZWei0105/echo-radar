@@ -174,9 +174,12 @@ function deadlineTiming(today, open, startBy, publishBy, close) {
   if (d <= 27) return [42, `還有時間，${md(startBy)} 前開工`];
   return [28, `不急，${md(startBy)} 前開工`];
 }
+// 比對關注清單時不管大小寫、空白與標點（「現代戰爭4」也對得到「現代戰爭 4」），遊戲的其他叫法（MW4）也算
+const nk = (s) => String(s || '').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
 function watchHit(t) {
-  const hay = `${t.title} ${(t.game && (t.game.zh || '') + ' ' + (t.game.en || '')) || ''}`.toLowerCase();
-  return P.watch.find((w) => w && hay.includes(w.toLowerCase())) || null;
+  const g = t.game || {};
+  const hay = nk([t.title, g.zh, g.en, ...(g.aliases || [])].join(' '));
+  return P.watch.find((w) => nk(w) && hay.includes(nk(w))) || null;
 }
 function evaluate() {
   const meta = S.meta;
@@ -228,18 +231,24 @@ function evaluate() {
   out.sort((a, b) => b._score - a._score);
   S.list = out;
   S.byId = Object.fromEntries(out.map((t) => [t.id, t]));
-  // TOP 5：同一條路線、同一種題目最多 2 個；已經在做或做過的、靜音的不算
+  // TOP 5（跟後台 pick_top 同一套規則）：已經在做或做過的、靜音的不算。
+  // 1. 可拍以上照分數挑，同一條路線、同一種題目最多 2 個；2. 不滿 5 個就讓被擋下的可拍以上題目進來（最多 3 個）；
+  // 3. 再不夠才用可拍以下的補（最多 2 個）。不會讓 53 分的題目卡掉 78 分的。
+  const pool = out.filter((t) => !(t._muted || (t.done && ['done', 'making'].includes(t.done.status)) || (t._plan && ['making', 'live'].includes(t._plan.status))));
   const top = [];
   const bp = {};
   const bt = {};
-  for (const t of out) {
-    if (t._muted || (t.done && ['done', 'making'].includes(t.done.status)) || (t._plan && ['making', 'live'].includes(t._plan.status))) continue;
-    if ((bp[t.pillar] || 0) >= 2 || (bt[t.type] || 0) >= 2) continue;
-    top.push(t);
-    bp[t.pillar] = (bp[t.pillar] || 0) + 1;
-    bt[t.type] = (bt[t.type] || 0) + 1;
-    if (top.length >= 5) break;
+  for (const [strong, cap] of [[true, 2], [true, 3], [false, 2]]) {
+    for (const t of pool) {
+      if (top.length >= 5) break;
+      if (top.includes(t) || (strong && t._disp < 58)) continue;
+      if ((bp[t.pillar] || 0) >= cap || (bt[t.type] || 0) >= cap) continue;
+      top.push(t);
+      bp[t.pillar] = (bp[t.pillar] || 0) + 1;
+      bt[t.type] = (bt[t.type] || 0) + 1;
+    }
   }
+  top.sort((a, b) => b._score - a._score);
   S.top = top;
 }
 
