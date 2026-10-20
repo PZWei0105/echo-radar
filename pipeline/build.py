@@ -1,6 +1,7 @@
 """每小時一輪：抓各測站 → 建遊戲名冊 → 掛訊號 → 產生題目與角度 → 輸出 App 資料。"""
 import datetime as dt
 import gzip
+import hashlib
 import json
 import os
 import pathlib
@@ -465,7 +466,13 @@ def copy_site(out_dir: pathlib.Path) -> str:
     if out_dir.exists():
         shutil.rmtree(out_dir)
     shutil.copytree(site, out_dir)
-    build_id = sid(str(time.time()))
+    # 版本號跟著介面檔案的內容走：介面沒改就不換版本，手機上的離線外殼不用每小時重抓
+    h = hashlib.sha1()
+    for p in sorted(site.rglob('*')):
+        if p.is_file():
+            h.update(p.relative_to(site).as_posix().encode('utf-8'))
+            h.update(p.read_bytes())
+    build_id = h.hexdigest()[:10]
     for p in out_dir.rglob('*'):
         if p.suffix in ('.html', '.js') and p.is_file():
             p.write_text(p.read_text(encoding='utf-8').replace('__BUILD__', build_id), encoding='utf-8')

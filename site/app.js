@@ -1,5 +1,5 @@
-import { Scope, echoColor, BANDS } from './radar.js';
-import { makeBrief, makePrompt } from './brief.js';
+import { Scope, echoColor, BANDS } from './radar.js?v=__BUILD__';
+import { makeBrief, makePrompt } from './brief.js?v=__BUILD__';
 
 const LS = 'echo.v1';
 const LS_KEY = 'echo.key';
@@ -153,7 +153,9 @@ function evaluate() {
     let startBy = win.start_by;
     let ttext = win.text;
     if (win.kind === 'deadline' && win.publish_by) {
-      startBy = addDays(win.publish_by, -P.lead);
+      // 週報最多抓 2 天、年度榜單至少 5 天：跟後台同一套規則
+      const lead = Math.min(Math.max(P.lead, win.lead_min || 0), win.lead_max || 99);
+      startBy = addDays(win.publish_by, -lead);
       const [tm, tx] = deadlineTiming(today, win.open, startBy, win.publish_by, win.close);
       if (tm == null) continue;
       timing = tm;

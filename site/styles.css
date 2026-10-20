@@ -355,13 +355,10 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius
 /* ---------------------------------------------------------------- 大螢幕：雷達在左、清單在右 */
 @media (min-width: 1000px) {
   .views { max-width: 1180px; }
-  #v-echo:not([hidden]) { display: grid; grid-template-columns: minmax(420px, 560px) 1fr; gap: 0 40px; align-items: start; }
-  #v-echo .scope-wrap, #v-echo .legend, #v-echo .alert { grid-column: 1; }
-  #v-echo .scope-wrap { max-width: 560px; margin-top: 10px; }
-  #v-echo .h2, #v-echo .top, #v-echo .foot { grid-column: 2; }
-  #v-echo .h2 { grid-row: 1; margin-top: 18px; }
-  #v-echo .top { grid-row: 2 / span 3; }
-  #v-echo .foot { grid-row: 5; }
+  #v-echo:not([hidden]) { display: grid; grid-template-columns: minmax(420px, 560px) 1fr; gap: 0 44px; align-items: start; }
+  .echo-main { position: sticky; top: calc(var(--bar-h) + 12px); }
+  .echo-main .scope-wrap { max-width: 560px; margin-top: 10px; }
+  .echo-side .h2 { margin-top: 12px; }
   .view { padding-top: 22px; }
 }
 @media (prefers-reduced-motion: reduce) {

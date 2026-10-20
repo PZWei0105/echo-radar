@@ -41,6 +41,7 @@
   <main class="views">
     <section class="view" id="v-echo" data-view="echo" aria-labelledby="t-echo">
       <h1 class="sr" id="t-echo">回波</h1>
+      <div class="echo-main">
       <div class="scope-wrap">
         <canvas class="scope" id="scope" width="720" height="720" role="img" aria-label="選題雷達：越靠近中心越急，顏色越熱分數越高"></canvas>
         <div class="sweep" aria-hidden="true"></div>
@@ -52,9 +53,12 @@
         <span class="lg-marks"><i style="left:46%">觀望</i><i style="left:58%">可拍</i><i style="left:70%">必拍</i></span>
       </div>
       <div class="alert" id="alert" hidden></div>
+      </div>
+      <div class="echo-side">
       <h2 class="h2">本週該拍</h2>
       <ol class="top" id="top"></ol>
       <p class="foot" id="echo-foot"></p>
+      </div>
     </section>
 
     <section class="view" id="v-list" data-view="list" aria-labelledby="t-list" hidden>

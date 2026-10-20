@@ -994,7 +994,7 @@ class Builder:
         t = {'id': f'rank:{rec["id"]}:{y}', 'type': 'ranking', 'pillar': 'ranking', 'title': title, 'facts': [],
              'timeline': [], 'format': 'ranking',
              'window': {'kind': 'deadline', 'open': open_d.isoformat(), 'start_by': start_by.isoformat(),
-                        'publish_by': publish_by.isoformat(), 'close': close.isoformat(), 'text': ttext},
+                        'publish_by': publish_by.isoformat(), 'close': close.isoformat(), 'text': ttext, 'lead_min': 5},
              'flags': [], 'demand_parts': {}}
         self.add(self._finish(t, cards, d, dwhy, timing, ttext, fit, fit_why, ease, ease_why, w))
 
@@ -1009,7 +1009,8 @@ class Builder:
         top = st[:6]
         if len(top) < 3:
             return
-        start_by = sunday - dt.timedelta(days=2)
+        # 週報素材都是整理好的新聞，製作天數最多抓 2 天（App 端用 lead_max 照同一套規則重算）
+        start_by = sunday - dt.timedelta(days=min(self.lead, 2))
         timing, ttext = _deadline_timing(today, monday, start_by, sunday, sunday + dt.timedelta(days=1))
         if timing is None:
             return
@@ -1033,6 +1034,7 @@ class Builder:
              'title': f'本週遊戲圈 {len(top)} 件大事（{md(monday)}～{md(sunday)}）', 'facts': facts, 'timeline': [],
              'format': 'roundup',
              'window': {'kind': 'deadline', 'open': monday.isoformat(), 'start_by': start_by.isoformat(),
-                        'publish_by': sunday.isoformat(), 'close': (sunday + dt.timedelta(days=1)).isoformat(), 'text': ttext},
+                        'publish_by': sunday.isoformat(), 'close': (sunday + dt.timedelta(days=1)).isoformat(), 'text': ttext,
+                        'lead_max': 2},
              'flags': ['新單元'], 'demand_parts': {}}
         self.add(self._finish(t, cards, d, ['每週固定單元，靠穩定更新累積觀眾'], timing, ttext, fit, fit_why, ease, ease_why, w))
