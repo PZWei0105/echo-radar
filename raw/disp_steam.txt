@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="SHORTCUT ICON" href="/favicon3.ico">
+<title>看板《》 - Disp BBS</title>
+<meta property="fb:app_id" content="111318672241067">
+<meta property="og:type" content="website">
+<meta property="og:title" content="看板《》 - Disp BBS">
+<meta name="purpleads-verification" content="e2328f8e9bf7c0815daaf7af"/>
+<meta name="Mediapartners-Google" content="noindex">
+<link rel="alternate" media="only screen and (max-width: 640px)" href="https://disp.cc/m/">
+<link rel="alternate" type="application/atom+xml" title="atom" href="/rss/.xml">
+<meta property="og:image" content="https://disp.cc/img/displogo/displogo200.png">
+<meta name="description" content="Disp BBS是一個用網頁介面來模擬傳統BBS操作的討論區網站，界面簡單、反應快速、可鍵盤操作，並提供將BBS文章轉為網頁以方便分享的服務。">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12159182-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-12159182-2');
+
+</script>
+
+<link rel="stylesheet" href="/include/93style.css" charset="utf-8">
+<link rel="stylesheet" href="/b/73board.css" charset="utf-8">
+<script src="/include/1gVar.js"></script>
+<script src="/b/6gVar.js"></script>
+<style type="text/css">
+body{ font-size: 20px; }
+@media (min-width: 1024px) and (max-width: 1119px) {
+	body{ font-size: 18px; }
+}
+@media (max-width: 1023px) {
+	body{ font-size: 14px; }
+}
+</style><style type="text/css" class="ads_css">
+</style>
+<!--[if lte IE 8]>
+<style type="text/css" id="ads_css">
+html{ overflow: auto; overflow-x: hidden; }
+body{ overflow: auto; position: relative; padding-right: 40px;    }
+#read{ overflow-x: hidden; overflow-y: hidden; }
+#read_content{ padding: 0 0 0 5px; overflow-y: hidden; }
+.scroll_box{ height: auto; }
+.scroll_bar{ display: none; }
+</style>
+<script type='text/javascript'>
+isIE = 8;
+</script>
+<![endif]-->
+<style type="text/css">
+html{ overflow: auto; overflow-x: hidden; }
+body{ overflow: hidden; position: relative; margin-right: 20px; }
+#read{ overflow-x: hidden; overflow-y: hidden; margin-right: 5px; }
+#read_content{ padding: 0 0 0 5px; overflow-y: hidden; }
+#read > .scroll_box{ height: auto; }
+#read > .scroll_bar{ display: none; }
+</style>
+
+
+
+
+<script type='text/javascript'>
+(function(window){ 
+	var g = {
+		ui: 0,
+		pttbanlist_ts: 0,
+		win_width: 0,
+		csrf_code: '',
+		sys_load: '0.3203125'
+	};
+	window.g = g;
+})(window);
+</script>
+
+</head>
+<body id="body">
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/zh_TW/all.js#xfbml=1&appId=111318672241067";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+	
+<!--[if lte IE 6]><script src="../include/ie6die.js"></script><![endif]-->
+	
+
+<div id="wrapper">
+
+<div id="right_banner">
+
+	
+</div><!-- /#right_banner -->
+
+	
+	
+<div id="main" class="center">
+
+<div id="page">未指定看板

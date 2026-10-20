@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:ht="https://trends.google.com/trending/rss" version="2.0">
+	<channel>
+		<title>Daily Search Trends</title>
+		<description>Recent searches</description>
+		<link>https://trends.google.com/trending/rss?geo=TW</link>
+		<atom:link href="https://trends.google.com/trending/rss?geo=TW" rel="self" type="application/rss+xml"/>
+		<item>
+			<title>張啓楷</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 01:20:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTAY1RM4R6IzsmNnvQIvZZapOsGN9Zz-XDVASYQYgK081VMDxMNLQYAxo0gb-4</ht:picture>
+			<ht:picture_source>UDN</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>嘉義市長議員選戰第三勢力組合成軍人文科技三劍客挑戰藍白綠軍| 2026九合一選舉</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://udn.com/vote2026/story/124652/9825250</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTAY1RM4R6IzsmNnvQIvZZapOsGN9Zz-XDVASYQYgK081VMDxMNLQYAxo0gb-4</ht:news_item_picture>
+				<ht:news_item_source>UDN</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>張啓楷告王美惠與姚立明並要求道歉 王美惠：不回應、尊重</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.ltn.com.tw/news/politics/breakingnews/5612025</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSAGXJftiuR9bwefLBftMb-XVJrMldP_vnlP-mAGylERbrjvIULENIeEY6bbqU</ht:news_item_picture>
+				<ht:news_item_source>自由時報</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>姚立明批政治立場反覆 張啟楷提告</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://hk.crntt.com/crn-webapp/wap/detail.jsp?coluid=7&amp;kindid=0&amp;docid=160279874</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSBWDk2618TH613AqkiE1UQZy04KykmXReTECQmdoQSwYWKyi4mEA2KUGIPdYw</ht:news_item_picture>
+				<ht:news_item_source>中國評論新聞</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>周子瑜</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 01:20:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTHuiUm3ucXovNahVYEDpF4yWoGjMcTtd9pF2BZmoZfQlgbuNfirLD7emfm7lQ</ht:picture>
+			<ht:picture_source>自由時報</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>子瑜釦子大開洩邪惡視角！泛紅「戀愛妝」網全暴動 離開JYP竟然變更美</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://istyle.ltn.com.tw/article/41364</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTHuiUm3ucXovNahVYEDpF4yWoGjMcTtd9pF2BZmoZfQlgbuNfirLD7emfm7lQ</ht:news_item_picture>
+				<ht:news_item_source>自由時報</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>周子瑜身高170 公分出席TWICE 11 週年見面會清新造型掀熱議！網友對比F1 活動：「淡妝更美！」</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.juksy.com/article/153232</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSbsOdjZDpuqfE2fuGpOl91pem58vOowMRpVaDrmtPTDIB80WAheKLKi-xBcFQ</ht:news_item_picture>
+				<ht:news_item_source>JUKSY 街星</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>F1不只是賽車！Twice 周子瑜、Stray Kids Felix、張員瑛都在穿什麼？F1新加坡站明星穿搭解析</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.elle.com.hk/fashion/f1-singapore-kpop-star-ootd-2026</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcROy7OxpQYEccvZYnhg13-Re1TaddzK-itVxyqs2Hhxk9dC0qZUV63Gl8I5nGI</ht:news_item_picture>
+				<ht:news_item_source>ELLE HK</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>謝典霖</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:50:00 -0700</pubDate>
+			<ht:picture/>
+			<ht:picture_source/>
+		</item>
+		<item>
+			<title>范瑋琪</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:50:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDNlqPqPaSwYRQrXd5fUImFuCRSehDk8tf3_rflLiOEbBKFjNr91edyyy-dxc</ht:picture>
+			<ht:picture_source>Yahoo新聞</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>陳建州含淚送別至親！范瑋琪獻唱詩歌 送百歲奶奶最後一程</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tw.news.yahoo.com/%E9%99%B3%E5%BB%BA%E5%B7%9E%E5%90%AB%E6%B7%9A%E9%80%81%E5%88%A5%E8%87%B3%E8%A6%AA-%E8%8C%83%E7%91%8B%E7%90%AA%E7%8D%BB%E5%94%B1%E8%A9%A9%E6%AD%8C-%E9%80%81%E7%99%BE%E6%AD%B2%E5%A5%B6%E5%A5%B6%E6%9C%80%E5%BE%8C-%E7%A8%8B-013800600.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDNlqPqPaSwYRQrXd5fUImFuCRSehDk8tf3_rflLiOEbBKFjNr91edyyy-dxc</ht:news_item_picture>
+				<ht:news_item_source>Yahoo新聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>黑人陳建州送別奶奶「心裡不捨但很幸福」 范瑋琪素顏獻唱詩歌</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://stars.udn.com/star/story/10089/9825410?list_ch2_indexgold</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ4YFmhrCVpgp99qpT-ZYmGNrruW3kNCvXL_cMgiicESrGxaVJ3VWZRFEtpVJY</ht:news_item_picture>
+				<ht:news_item_source>噓！星聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>黑人送別百歲奶奶！　范范獻唱淚喊「天家再見」</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://star.ettoday.net/news/3257512</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ-FG3SYG36M96qrpQYEktSvvCPNupWn-URpcCHquIfUEyxI8_zATYQ1xmIurU</ht:news_item_picture>
+				<ht:news_item_source>ETtoday星光雲| ETtoday新聞雲</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>林安可</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:50:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQeFChzdlFCCnpsDH8d6Q5_702WfONzF6LBQ5xIZQBj2u5Dd20-dSQOohG93KI</ht:picture>
+			<ht:picture_source>Yahoo運動</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>日職》林安可結束第1個球季返台 「沒能陪球隊奮戰到最後很不甘心」</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tw.sports.yahoo.com/news/%E6%97%A5%E8%81%B7-%E6%9E%97%E5%AE%89%E5%8F%AF%E7%B5%90%E6%9D%9F%E7%AC%AC1%E5%80%8B%E7%90%83%E5%AD%A3%E8%BF%94%E5%8F%B0-%E6%B2%92%E8%83%BD%E9%99%AA%E7%90%83%E9%9A%8A%E5%A5%AE%E6%88%B0%E5%88%B0%E6%9C%80%E5%BE%8C%E5%BE%88%E4%B8%8D%E7%94%98%E5%BF%83-064514959.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQeFChzdlFCCnpsDH8d6Q5_702WfONzF6LBQ5xIZQBj2u5Dd20-dSQOohG93KI</ht:news_item_picture>
+				<ht:news_item_source>Yahoo運動</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>日職》旅日首年坦言留下遺憾！ 台灣重砲林安可返台了</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://sports.ltn.com.tw/news/breakingnews/5612300</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS-z7wTDFDw19SSAe1H2SJ5mvAM2lG6I6WSP3-4wMJYP8lSbaJDisDaRllFaGQ</ht:news_item_picture>
+				<ht:news_item_source>自由體育</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>日職/林安可被西武獅抹消登錄！季後賽遭排除 下一站確定了</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://ctinews.com/news/items/p5W9mGjJWo</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTvtXSlpndGgBizDDrwVw1BZNKp1g-aKlsMpqXFnixlABzxsycTxDKrvhPgVeY</ht:news_item_picture>
+				<ht:news_item_source>中天新聞網</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>蔡家蓁</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:40:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTobNCChKgHtVfFAg05BzzmhSzCUYiZQnEmqSdpxLWPOS88AN2Am6GpHT7HFiw</ht:picture>
+			<ht:picture_source>Yahoo新聞</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>蔡家蓁告白「好喜歡你」爆認愛！對象是異國鮮肉 網嗨喊官宣了</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tw.news.yahoo.com/%E8%94%A1%E5%AE%B6%E8%93%81%E5%91%8A%E7%99%BD-%E5%A5%BD%E5%96%9C%E6%AD%A1%E4%BD%A0-%E7%88%86%E8%AA%8D%E6%84%9B-%E5%B0%8D%E8%B1%A1%E6%98%AF%E7%95%B0%E5%9C%8B%E9%AE%AE%E8%82%89-%E7%B6%B2%E5%97%A8%E5%96%8A%E5%AE%98%E5%AE%A3%E4%BA%86-051800271.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTobNCChKgHtVfFAg05BzzmhSzCUYiZQnEmqSdpxLWPOS88AN2Am6GpHT7HFiw</ht:news_item_picture>
+				<ht:news_item_source>Yahoo新聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>台語小歌后突認愛「好喜歡你」 印尼男子身分曝光超有愛</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.nextapple.com/entertainment/20261020/EB5262CBC7443B7150815E2A8ACDFFA8</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRB-Og6DVmIJwizkCA2XP6b_El9sdK-y1Vvp5QFVXi_gNAOXG9AWAKxRFLo1Ds</ht:news_item_picture>
+				<ht:news_item_source>壹蘋新聞網</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>蔡家蓁印尼開唱突「認愛」 鮮肉男身分曝光 | CTWANT</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://today.line.me/tw/v3/article/WBprPVE</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSDf5jm8AkoU98sMdUapJZ-KXtl7r1ddZAmlQiyM-J5XwNqoXQcDgj_raIzMr8</ht:news_item_picture>
+				<ht:news_item_source>LINE TODAY</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>聚四氟乙烯</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:30:00 -0700</pubDate>
+			<ht:picture/>
+			<ht:picture_source/>
+		</item>
+		<item>
+			<title>余天</title>
+			<ht:approx_traffic>1000+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSaOHob9OCRnw-fO6-UsEr2otNeeyTljqACwtvB1lrSfk3yCUsUr0_NSpnXsiU</ht:picture>
+			<ht:picture_source>噓！星聞</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>不捨兒子余祥銓獨撐家計！78歲余天撐病體復出狂接選舉場</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://stars.udn.com/star/story/10089/9825322</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSaOHob9OCRnw-fO6-UsEr2otNeeyTljqACwtvB1lrSfk3yCUsUr0_NSpnXsiU</ht:news_item_picture>
+				<ht:news_item_source>噓！星聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>余天罹癌後消瘦現身！狂接選舉活動原因曝光</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tw.news.yahoo.com/%E4%BD%99%E5%A4%A9%E7%BD%B9%E7%99%8C%E5%BE%8C%E6%B6%88%E7%98%A6%E7%8F%BE%E8%BA%AB-%E7%8B%82%E6%8E%A5%E9%81%B8%E8%88%89%E6%B4%BB%E5%8B%95%E5%8E%9F%E5%9B%A0%E6%9B%9D%E5%85%89-071530585.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW8niW0nSyso8nqgwr_fFrZnWvF-cz1U0_KMuwMKGPKL8Y_ihfGvMZM_A6dsA</ht:news_item_picture>
+				<ht:news_item_source>Yahoo新聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>余天暴瘦現身挺林世宗！連跑20場選舉活動原因曝光：家裡需要錢</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.nownews.com/news/6884880</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSYv08wskGCIpeKqEmeYua3_cJXgfLFe3RBxBrwXpJXCFKx9TVgeokNwutfF3I</ht:news_item_picture>
+				<ht:news_item_source>NOWnews今日新聞</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>強風</title>
+			<ht:approx_traffic>1000+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcR3AosL9WK6PhbXDtPsHjDRtlqklSNx1X9S2TCP9Dm61cWfzGQx9ZvBVEthil4</ht:picture>
+			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>台風 23-24日頃にかけ先島諸島へ</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.yahoo.co.jp/pickup/6599465</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcR3AosL9WK6PhbXDtPsHjDRtlqklSNx1X9S2TCP9Dm61cWfzGQx9ZvBVEthil4</ht:news_item_picture>
+				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>台風30号 23日から沖縄の先島諸島に接近見込み 最新情報確認を</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.web.nhk/newsweb/na/nd-20261020de61985</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7AWfs1c8PAN1JoHiIHDXYqlKR79w7Z_koOmZ-jomVpKx1iOgOtsu9kLfldho</ht:news_item_picture>
+				<ht:news_item_source>NHKニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>台風30号(チャンパー)は非常に強い勢力で沖縄接近 進路は北寄りに変化</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://weathernews.jp/news/202610/200091/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTs77m3sNMDVwhM3jWi_nDuQXu3qI09ai-qU0-Om41htGwhNk6oM_MqvaBqHvE</ht:news_item_picture>
+				<ht:news_item_source>ウェザーニュース</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>人工智慧代理</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Tue, 20 Oct 2026 00:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRv9PdbcRwEwLSZmPpu0zy_ihlY428Nw0_yf9m4wp9Lwp4K8C5QNnavpzAoKxs</ht:picture>
+			<ht:picture_source>iThome</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>微軟、Nvidia提出開放權重AI模型風險管理指引</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.ithome.com.tw/news/179757</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRv9PdbcRwEwLSZmPpu0zy_ihlY428Nw0_yf9m4wp9Lwp4K8C5QNnavpzAoKxs</ht:news_item_picture>
+				<ht:news_item_source>iThome</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>駭客靠AI代理自動攻破逾百個網站　攻擊成本僅數千美元</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://ai.ettoday.net/news/3257800</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKw0VhFS4qBbGoXv2aAHZmdAET3eI51PwVZHK6X988gT6uhVzpaP5pC69xKso</ht:news_item_picture>
+				<ht:news_item_source>ETtoday AI科技</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>《路透》：疑中駭客用AI代理 入侵100多家企業網站</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.cnyes.com/news/id/6633876</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSatPmJz88IwAlyZdfhraKU6VHMM8IbDM9a3v284Iu-G2WKOYSwMJdHzektew0</ht:news_item_picture>
+				<ht:news_item_source>鉅亨網</ht:news_item_source>
+			</ht:news_item>
+		</item>
+	</channel>
+</rss>

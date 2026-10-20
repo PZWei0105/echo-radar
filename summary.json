@@ -1,0 +1,187 @@
+{
+ "started": "2026-10-20T09:06:24.583948+00:00",
+ "python": "3.12.15",
+ "results": [
+  {
+   "name": "ptt_atom",
+   "url": "https://www.ptt.cc/atom/Steam.xml",
+   "status": 403,
+   "final_url": "https://www.ptt.cc/atom/Steam.xml",
+   "size": 5603,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.11
+  },
+  {
+   "name": "ptt_atom_bot",
+   "url": "https://www.ptt.cc/atom/Steam.xml",
+   "status": 403,
+   "final_url": "https://www.ptt.cc/atom/Steam.xml",
+   "size": 5581,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.05
+  },
+  {
+   "name": "ptt_rss_host",
+   "url": "https://rss.ptt.cc/Steam.xml",
+   "status": 403,
+   "final_url": "https://rss.ptt.cc/Steam.xml",
+   "size": 5588,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.09
+  },
+  {
+   "name": "disp_ptthot",
+   "url": "https://disp.cc/b/PttHot",
+   "status": 200,
+   "final_url": "https://disp.cc/b/PttHot",
+   "size": 29317,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.7
+  },
+  {
+   "name": "disp_steam",
+   "url": "https://disp.cc/b/Steam",
+   "status": 200,
+   "final_url": "https://disp.cc/b/Steam",
+   "size": 3227,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.42
+  },
+  {
+   "name": "pttweb_hot",
+   "url": "https://www.pttweb.cc/hot/all/today",
+   "status": 200,
+   "final_url": "https://www.pttweb.cc/hot/all/today",
+   "size": 535736,
+   "content_type": "text/html; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.53
+  },
+  {
+   "name": "pttweb_board",
+   "url": "https://www.pttweb.cc/bbs/Steam",
+   "status": 200,
+   "final_url": "https://www.pttweb.cc/bbs/Steam",
+   "size": 443717,
+   "content_type": "text/html; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.42
+  },
+  {
+   "name": "moptt_hot",
+   "url": "https://moptt.tw/ptt/hot",
+   "status": 403,
+   "final_url": "https://moptt.tw/ptt/hot",
+   "size": 5665,
+   "content_type": "text/html; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.24
+  },
+  {
+   "name": "gnews_tw_games",
+   "url": "https://news.google.com/rss/search?q=%E9%81%8A%E6%88%B2%20when%3A2d&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+   "status": 200,
+   "final_url": "https://news.google.com/rss/search?q=%E9%81%8A%E6%88%B2%20when%3A2d&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+   "size": 146819,
+   "content_type": "application/xml; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.51
+  },
+  {
+   "name": "gnews_tw_entity",
+   "url": "https://news.google.com/rss/search?q=%22%E4%BF%A0%E7%9B%9C%E7%8D%B5%E8%BB%8A%E6%89%8B%22%20OR%20%22GTA%206%22%20when%3A3d&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+   "status": 200,
+   "final_url": "https://news.google.com/rss/search?q=%22%E4%BF%A0%E7%9B%9C%E7%8D%B5%E8%BB%8A%E6%89%8B%22%20OR%20%22GTA%206%22%20when%3A3d&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+   "size": 43121,
+   "content_type": "application/xml; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.26
+  },
+  {
+   "name": "gtrends_cat",
+   "url": "https://trends.google.com/trending/rss?geo=TW&category=8",
+   "status": 200,
+   "final_url": "https://trends.google.com/trending/rss?geo=TW&category=8",
+   "size": 17430,
+   "content_type": "text/xml; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.35
+  },
+  {
+   "name": "steam_topsell_tw",
+   "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=topsellers&category1=998&cc=tw&l=tchinese&infinite=1",
+   "status": 200,
+   "final_url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=topsellers&category1=998&cc=tw&l=tchinese&infinite=1",
+   "size": 234573,
+   "content_type": "application/json; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.21
+  },
+  {
+   "name": "steam_topsell_tw_en",
+   "url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=topsellers&category1=998&cc=tw&l=english&infinite=1",
+   "status": 200,
+   "final_url": "https://store.steampowered.com/search/results/?query=&start=0&count=100&filter=topsellers&category1=998&cc=tw&l=english&infinite=1",
+   "size": 236072,
+   "content_type": "application/json; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.18
+  },
+  {
+   "name": "reddit_pcgaming_rss",
+   "url": "https://www.reddit.com/r/pcgaming/top/.rss?t=day",
+   "status": 200,
+   "final_url": "https://www.reddit.com/r/pcgaming/top/.rss?t=day",
+   "size": 46030,
+   "content_type": "application/atom+xml; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.27
+  },
+  {
+   "name": "reddit_gaming_rss",
+   "url": "https://www.reddit.com/r/gaming/top/.rss?t=day",
+   "status": 429,
+   "final_url": "https://www.reddit.com/r/gaming/top/.rss?t=day",
+   "size": 0,
+   "content_type": null,
+   "retry_after": null,
+   "elapsed": 0.04
+  },
+  {
+   "name": "reddit_games_hot_rss",
+   "url": "https://www.reddit.com/r/Games/hot/.rss",
+   "status": 429,
+   "final_url": "https://www.reddit.com/r/Games/hot/.rss",
+   "size": 0,
+   "content_type": null,
+   "retry_after": null,
+   "elapsed": 0.04
+  },
+  {
+   "name": "steam_news_hub",
+   "url": "https://store.steampowered.com/events/ajaxgetpartnereventspageable/?clan_accountid=0&appid=0&offset=0&count=20&l=tchinese&origin=https://store.steampowered.com",
+   "status": 400,
+   "final_url": "https://store.steampowered.com/events/ajaxgetpartnereventspageable/?clan_accountid=0&appid=0&offset=0&count=20&l=tchinese&origin=https://store.steampowered.com",
+   "size": 49,
+   "content_type": "application/json; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.1
+  },
+  {
+   "name": "steam_reviews_tc_recent",
+   "url": "https://store.steampowered.com/appreviews/4435490?json=1&language=tchinese&purchase_type=all&num_per_page=100&filter=recent",
+   "status": 200,
+   "final_url": "https://store.steampowered.com/appreviews/4435490?json=1&language=tchinese&purchase_type=all&num_per_page=100&filter=recent",
+   "size": 53033,
+   "content_type": "application/json; charset=utf-8",
+   "retry_after": null,
+   "elapsed": 0.16
+  }
+ ],
+ "finished": "2026-10-20T09:06:50.876271+00:00"
+}

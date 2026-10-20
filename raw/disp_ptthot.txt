@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="SHORTCUT ICON" href="/favicon3.ico">
+<title>看板《PttHot》批踢踢熱門文章 - Disp BBS</title>
+<meta property="fb:app_id" content="111318672241067">
+<meta property="og:type" content="website">
+<meta property="og:title" content="看板《PttHot》批踢踢熱門文章 - Disp BBS">
+<meta name="purpleads-verification" content="e2328f8e9bf7c0815daaf7af"/>
+<meta name="Mediapartners-Google" content="noindex">
+<link rel="alternate" media="only screen and (max-width: 640px)" href="https://disp.cc/m/PttHot">
+<link rel="alternate" type="application/atom+xml" title="atom" href="/rss/PttHot.xml">
+<meta property="og:image" content="https://disp.cc/img/board/PttHot.jpg">
+<meta property="og:image" content="https://disp.cc/img/displogo/displogo200.png">
+<meta name="description" content="Disp BBS是一個用網頁介面來模擬傳統BBS操作的討論區網站，界面簡單、反應快速、可鍵盤操作，並提供將BBS文章轉為網頁以方便分享的服務。">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12159182-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-12159182-2');
+
+</script>
+
+<link rel="stylesheet" href="/include/93style.css" charset="utf-8">
+<link rel="stylesheet" href="/b/73board.css" charset="utf-8">
+<script src="/include/1gVar.js"></script>
+<script src="/b/6gVar.js"></script>
+<style type="text/css">
+body{ font-size: 20px; }
+@media (min-width: 1024px) and (max-width: 1119px) {
+	body{ font-size: 18px; }
+}
+@media (max-width: 1023px) {
+	body{ font-size: 14px; }
+}
+</style><style type="text/css" class="ads_css">
+</style>
+<!--[if lte IE 8]>
+<style type="text/css" id="ads_css">
+html{ overflow: auto; overflow-x: hidden; }
+body{ overflow: auto; position: relative; padding-right: 40px;    }
+#read{ overflow-x: hidden; overflow-y: hidden; }
+#read_content{ padding: 0 0 0 5px; overflow-y: hidden; }
+.scroll_box{ height: auto; }
+.scroll_bar{ display: none; }
+</style>
+<script type='text/javascript'>
+isIE = 8;
+</script>
+<![endif]-->
+<style type="text/css">
+html{ overflow: auto; overflow-x: hidden; }
+body{ overflow: hidden; position: relative; margin-right: 20px; }
+#read{ overflow-x: hidden; overflow-y: hidden; margin-right: 5px; }
+#read_content{ padding: 0 0 0 5px; overflow-y: hidden; }
+#read > .scroll_box{ height: auto; }
+#read > .scroll_bar{ display: none; }
+</style>
+
+
+
+
+<script type='text/javascript'>
+(function(window){ 
+	var g = {
+		ui: 0,
+		pttbanlist_ts: 0,
+		win_width: 0,
+		csrf_code: '',
+		sys_load: '0.3486328125'
+	};
+	window.g = g;
+})(window);
+</script>
+
+</head>
+<body id="body">
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/zh_TW/all.js#xfbml=1&appId=111318672241067";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+	
+<!--[if lte IE 6]><script src="../include/ie6die.js"></script><![endif]-->
+	
+
+<div id="wrapper">
+
+<div id="right_banner">
+
+	
+</div><!-- /#right_banner -->
+
+	
+	
+<div id="main" class="center">
+
+<div id="page"><div class="page_top">
+<a class="disp_bbs novisited" href="../">Disp BBS</a>
+
+
+guest <a href="../user/register.php" title="Register" rel="nofollow">註冊</a> <span class="btn" onclick="login()" title="Login" rel="nofollow">登入(i)</span> <a class="novisited" href="/user/" title="online user list(ctrl+u)" rel="nofollow">線上人數: 1242</a>
+</div><div id="position" class="bgL" style="width:100%">/<a href="/menu.php?">主選單</a>/<a href="/b/?">看板選單</a>/<a href="/b/b_list?">看板列表</a>/<span class="fgW1">看板: 批踢踢熱門文章</span></div>
+<span id="board_div">看板《PttHot》</span>
+
+<div class="LH120">
+<div class="top_tab_focus" title="List of all text">所有文章</div>
+<a href="PttHot&pi=0" onClick="return listToclass();" title="Classified list of text"><div class="top_tab_blur">z)文章分類</div></a>
+<div class="top_tab_blur"><span class="btn" onclick="listToFriend();" title="Friend of the board">f)板友名單</span></div>
+&nbsp;<a id="admin" href="admin.php?bi=796" title="Option of the board">O)設定</a>
+<span class="btn" onClick="help();" title="help">h)說明</span>
+<span class="btn" onClick="board_fav(bi);" title="加到訂閱的看板">訂閱此板</span>
+<a class="rss" href="https://rss.disp.cc/PttHot.xml" target="_blank" title="使用 RSS feed 訂閱看板">訂閱RSS</a>
+<a class="post_btn" href="/editor/editor.php?type=new&bi=796" onclick="listPost();" title="Post a new text">p)發表文章</a>
+<!--搜尋:
+a)<span class="button" onClick="findAuthor();" title="Find Author">作者</span>
+/)<span class="button" onClick="findTitle();" title="Find Title">標題</span>
+-->
+<div class="BM_div" title="Board Manager">
+【板主:<a class="fgW1" href="../user/Knuckles">Knuckles</a>】
+</div>
+</div>
+
+<div class="list_top" >
+<span class="L2">編 號</span>
+<span class="L12">日 期</span>
+<span class="L18">作　者</span>
+<span class="L34">文　章　標　題</span>
+<span class="R0" title="看板人氣:8 本日人氣:1,808 累積人氣:55,627,294">看板人氣:8 本日:1K 累積:55M</span>
+</div>
+
+<div id="list">
+
+<div class="row2">
+<div id="row65678" class="row" li="4651065" data-cover="0">
+<span class="hide" id="ti65678" >i7jV</span>
+<span class="point" id="point65678" onclick="selectIt(65678);">●</span>
+<span class="list-num">65678</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 5">&nbsp;5</span></span> 
+<span class="L12" title="2026-06-28 12:37:05"><pre>06-28</pre></span>
+<span class="L18" id="author65678"><a class="user" href="/ptt/user/MiCy/post" target="_blank">(MiCy.)</a></span>
+<span class="hide" id="isAuthor65678" >0</span>
+<span class="hide" id="allow65678" >1</span>
+<span class="hide" id="alDel65678" >1</span>
+<span class="L34 nowrap listTitle" id="title65678"><a id="link65678" onClick="return downLevel(65678);" href="/b/PttHot/i7jV" ><span class="titleColor">■ [正妹] 片商吹太大了啦 = =</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6302">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65679" class="row" li="4654001" data-cover="0">
+<span class="hide" id="ti65679" >i8dQ</span>
+<span class="point" id="point65679" onclick="selectIt(65679);">●</span>
+<span class="list-num">65679</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 1">&nbsp;1</span></span> 
+<span class="L12" title="2026-07-07 11:26:41"><pre>07-07</pre></span>
+<span class="L18" id="author65679"><a class="user" href="/ptt/user/crocus/post" target="_blank">(crocus.)</a></span>
+<span class="hide" id="isAuthor65679" >0</span>
+<span class="hide" id="allow65679" >1</span>
+<span class="hide" id="alDel65679" >1</span>
+<span class="L34 nowrap listTitle" id="title65679"><a id="link65679" onClick="return downLevel(65679);" href="/b/PttHot/i8dQ" ><span class="titleColor">■ [新聞] 快訊／巴威加速了！ 全台「颱風假」機率曝</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6252">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65680" class="row" li="4654070" data-cover="0">
+<span class="hide" id="ti65680" >i8eI</span>
+<span class="point" id="point65680" onclick="selectIt(65680);">●</span>
+<span class="list-num">65680</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 5">&nbsp;5</span></span> 
+<span class="L12" title="2026-07-06 23:28:06"><pre>07-06</pre></span>
+<span class="L18" id="author65680"><a class="user" href="/ptt/user/asxc530530/post" target="_blank">(asxc530530.)</a></span>
+<span class="hide" id="isAuthor65680" >0</span>
+<span class="hide" id="allow65680" >1</span>
+<span class="hide" id="alDel65680" >1</span>
+<span class="L34 nowrap listTitle" id="title65680"><a id="link65680" onClick="return downLevel(65680);" href="/b/PttHot/i8eI" ><span class="titleColor">■ [正妹] 成人展大黑馬 Juu</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 7337">7K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65681" class="row" li="4654529" data-cover="0">
+<span class="hide" id="ti65681" >i8lj</span>
+<span class="point" id="point65681" onclick="selectIt(65681);">●</span>
+<span class="list-num">65681</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-07-08 11:15:44"><pre>07-08</pre></span>
+<span class="L18" id="author65681"><a class="user" href="/ptt/user/jing1219/post" target="_blank">(jing1219.)</a></span>
+<span class="hide" id="isAuthor65681" >0</span>
+<span class="hide" id="allow65681" >1</span>
+<span class="hide" id="alDel65681" >1</span>
+<span class="L34 nowrap listTitle" id="title65681"><a id="link65681" onClick="return downLevel(65681);" href="/b/PttHot/i8lj" ><span class="titleColor">■ [新聞] 快訊／警戒擴大了！颱風假「10縣市停班課</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6167">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65682" class="row" li="4654560" data-cover="0">
+<span class="hide" id="ti65682" >i8l3</span>
+<span class="point" id="point65682" onclick="selectIt(65682);">●</span>
+<span class="list-num">65682</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-07-08 11:02:23"><pre>07-08</pre></span>
+<span class="L18" id="author65682"><a class="user" href="/ptt/user/yyyyyuuuuu/post" target="_blank">(yyyyyuuuuu.)</a></span>
+<span class="hide" id="isAuthor65682" >0</span>
+<span class="hide" id="allow65682" >1</span>
+<span class="hide" id="alDel65682" >1</span>
+<span class="L34 nowrap listTitle" id="title65682"><a id="link65682" onClick="return downLevel(65682);" href="/b/PttHot/i8l3" ><span class="titleColor">■ [問卦] 巴威颱風最新路徑!北部颱風假掰掰= =</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5658">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65683" class="row" li="4654904" data-cover="0">
+<span class="hide" id="ti65683" >i6e2</span>
+<span class="point" id="point65683" onclick="selectIt(65683);">●</span>
+<span class="list-num">65683</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 4">&nbsp;4</span></span> 
+<span class="L12" title="2026-06-15 15:20:04"><pre>06-15</pre></span>
+<span class="L18" id="author65683"><a class="user" href="/ptt/user/yavakaka/post" target="_blank">(yavakaka.)</a></span>
+<span class="hide" id="isAuthor65683" >0</span>
+<span class="hide" id="allow65683" >1</span>
+<span class="hide" id="alDel65683" >1</span>
+<span class="L34 nowrap listTitle" id="title65683"><a id="link65683" onClick="return downLevel(65683);" href="/b/PttHot/i6e2" ><span class="titleColor">■ [正妹] 台大財金所高材生好身材</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5698">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65684" class="row" li="4657400" data-cover="0">
+<span class="hide" id="ti65684" >i94E</span>
+<span class="point" id="point65684" onclick="selectIt(65684);">●</span>
+<span class="list-num">65684</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 2">&nbsp;2</span></span> 
+<span class="L12" title="2026-07-14 17:11:41"><pre>07-14</pre></span>
+<span class="L18" id="author65684"><a class="user" href="/ptt/user/asxc530530/post" target="_blank">(asxc530530.)</a></span>
+<span class="hide" id="isAuthor65684" >0</span>
+<span class="hide" id="allow65684" >1</span>
+<span class="hide" id="alDel65684" >1</span>
+<span class="L34 nowrap listTitle" id="title65684"><a id="link65684" onClick="return downLevel(65684);" href="/b/PttHot/i94E" ><span class="titleColor">■ [正妹] 選老闆還是選員工？</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6400">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65685" class="row" li="4658896" data-cover="0">
+<span class="hide" id="ti65685" >i9vb</span>
+<span class="point" id="point65685" onclick="selectIt(65685);">●</span>
+<span class="list-num">65685</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 2">&nbsp;2</span></span> 
+<span class="L12" title="2026-07-19 16:32:23"><pre>07-19</pre></span>
+<span class="L18" id="author65685"><a class="user" href="/ptt/user/a91153456/post" target="_blank">(a91153456.)</a></span>
+<span class="hide" id="isAuthor65685" >0</span>
+<span class="hide" id="allow65685" >1</span>
+<span class="hide" id="alDel65685" >1</span>
+<span class="L34 nowrap listTitle" id="title65685"><a id="link65685" onClick="return downLevel(65685);" href="/b/PttHot/i9vb" ><span class="titleColor">■ [問卦]現在高中職女生尺度 已經這麼大嗎…？</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6917">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65686" class="row" li="4659548" data-cover="0">
+<span class="hide" id="ti65686" >i9ED</span>
+<span class="point" id="point65686" onclick="selectIt(65686);">●</span>
+<span class="list-num">65686</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 2">&nbsp;2</span></span> 
+<span class="L12" title="2026-07-21 08:28:04"><pre>07-21</pre></span>
+<span class="L18" id="author65686"><a class="user" href="/ptt/user/yokann/post" target="_blank">(yokann.)</a></span>
+<span class="hide" id="isAuthor65686" >0</span>
+<span class="hide" id="allow65686" >1</span>
+<span class="hide" id="alDel65686" >1</span>
+<span class="L34 nowrap listTitle" id="title65686"><a id="link65686" onClick="return downLevel(65686);" href="/b/PttHot/i9ED" ><span class="titleColor">■ Re: [問卦] 奶大的女生真的有優勢嗎？</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6252">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65687" class="row" li="4668401" data-cover="0">
+<span class="hide" id="ti65687" >ibVZ</span>
+<span class="point" id="point65687" onclick="selectIt(65687);">●</span>
+<span class="list-num">65687</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 4">&nbsp;4</span></span> 
+<span class="L12" title="2026-08-12 20:56:02"><pre>08-12</pre></span>
+<span class="L18" id="author65687"><a class="user" href="/ptt/user/ReiKuromiya/post" target="_blank">(ReiKuromiya.)</a></span>
+<span class="hide" id="isAuthor65687" >0</span>
+<span class="hide" id="allow65687" >1</span>
+<span class="hide" id="alDel65687" >1</span>
+<span class="L34 nowrap listTitle" id="title65687"><a id="link65687" onClick="return downLevel(65687);" href="/b/PttHot/ibVZ" ><span class="titleColor">■ [正妹] 殭屍cosplay</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6546">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65688" class="row" li="4668461" data-cover="0">
+<span class="hide" id="ti65688" >ibXU</span>
+<span class="point" id="point65688" onclick="selectIt(65688);">●</span>
+<span class="list-num">65688</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 1">&nbsp;1</span></span> 
+<span class="L12" title="2026-08-14 12:17:50"><pre>08-14</pre></span>
+<span class="L18" id="author65688"><a class="user" href="/ptt/user/ilovecat5566/post" target="_blank">(ilovecat5566.)</a></span>
+<span class="hide" id="isAuthor65688" >0</span>
+<span class="hide" id="allow65688" >1</span>
+<span class="hide" id="alDel65688" >1</span>
+<span class="L34 nowrap listTitle" id="title65688"><a id="link65688" onClick="return downLevel(65688);" href="/b/PttHot/ibXU" ><span class="titleColor">■ [問卦] 找到芊芊了？ 有沒有卦？0.0</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6177">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65689" class="row" li="4672128" data-cover="0">
+<span class="hide" id="ti65689" >icVd</span>
+<span class="point" id="point65689" onclick="selectIt(65689);">●</span>
+<span class="list-num">65689</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 1">&nbsp;1</span></span> 
+<span class="L12" title="2026-08-24 15:32:58"><pre>08-24</pre></span>
+<span class="L18" id="author65689"><a class="user" href="/ptt/user/ilovesamsung/post" target="_blank">(ilovesamsung.)</a></span>
+<span class="hide" id="isAuthor65689" >0</span>
+<span class="hide" id="allow65689" >1</span>
+<span class="hide" id="alDel65689" >1</span>
+<span class="L34 nowrap listTitle" id="title65689"><a id="link65689" onClick="return downLevel(65689);" href="/b/PttHot/icVd" ><span class="titleColor">■ [問卦] 護理師這張pr多少</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5954">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65690" class="row" li="4673179" data-cover="0">
+<span class="hide" id="ti65690" >icB0</span>
+<span class="point" id="point65690" onclick="selectIt(65690);">●</span>
+<span class="list-num">65690</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 3">&nbsp;3</span></span> 
+<span class="L12" title="2026-08-20 22:33:56"><pre>08-20</pre></span>
+<span class="L18" id="author65690"><a class="user" href="/ptt/user/FWMK2RC6RS/post" target="_blank">(FWMK2RC6RS.)</a></span>
+<span class="hide" id="isAuthor65690" >0</span>
+<span class="hide" id="allow65690" >1</span>
+<span class="hide" id="alDel65690" >1</span>
+<span class="L34 nowrap listTitle" id="title65690"><a id="link65690" onClick="return downLevel(65690);" href="/b/PttHot/icB0" ><span class="titleColor">■ [正妹] 這樣的正妹副駕逗人無法專心開車</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5857">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65691" class="row" li="4673557" data-cover="0">
+<span class="hide" id="ti65691" >idcQ</span>
+<span class="point" id="point65691" onclick="selectIt(65691);">●</span>
+<span class="list-num">65691</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-08-27 15:51:23"><pre>08-27</pre></span>
+<span class="L18" id="author65691"><a class="user" href="/ptt/user/Allen0315/post" target="_blank">(Allen0315.)</a></span>
+<span class="hide" id="isAuthor65691" >0</span>
+<span class="hide" id="allow65691" >1</span>
+<span class="hide" id="alDel65691" >1</span>
+<span class="L34 nowrap listTitle" id="title65691"><a id="link65691" onClick="return downLevel(65691);" href="/b/PttHot/idcQ" ><span class="titleColor">■ [新聞] 女偶像性愛照曝光讓粉絲崩潰 她承認背叛！女團做出罕見…</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5999">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65692" class="row" li="4673981" data-cover="0">
+<span class="hide" id="ti65692" >i9xL</span>
+<span class="point" id="point65692" onclick="selectIt(65692);">●</span>
+<span class="list-num">65692</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 3">&nbsp;3</span></span> 
+<span class="L12" title="2026-07-19 19:14:14"><pre>07-19</pre></span>
+<span class="L18" id="author65692"><a class="user" href="/ptt/user/h94g41up/post" target="_blank">(h94g41up.)</a></span>
+<span class="hide" id="isAuthor65692" >0</span>
+<span class="hide" id="allow65692" >1</span>
+<span class="hide" id="alDel65692" >1</span>
+<span class="L34 nowrap listTitle" id="title65692"><a id="link65692" onClick="return downLevel(65692);" href="/b/PttHot/i9xL" ><span class="titleColor">■ [心得] 分享生成AI色色圖片/影音的網站</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5687">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65693" class="row" li="4679580" data-cover="0">
+<span class="hide" id="ti65693" >iePT</span>
+<span class="point" id="point65693" onclick="selectIt(65693);">●</span>
+<span class="list-num">65693</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-09-13 04:57:15"><pre>09-13</pre></span>
+<span class="L18" id="author65693"><a class="user" href="/ptt/user/sandranana/post" target="_blank">(sandranana.)</a></span>
+<span class="hide" id="isAuthor65693" >0</span>
+<span class="hide" id="allow65693" >1</span>
+<span class="hide" id="alDel65693" >1</span>
+<span class="L34 nowrap listTitle" id="title65693"><a id="link65693" onClick="return downLevel(65693);" href="/b/PttHot/iePT" ><span class="titleColor">■ 我男友不幹我</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5810">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65694" class="row" li="4680655" data-cover="0">
+<span class="hide" id="ti65694" >if1h</span>
+<span class="point" id="point65694" onclick="selectIt(65694);">●</span>
+<span class="list-num">65694</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-09-15 23:08:13"><pre>09-15</pre></span>
+<span class="L18" id="author65694"><a class="user" href="/ptt/user/BMWi3/post" target="_blank">(BMWi3.)</a></span>
+<span class="hide" id="isAuthor65694" >0</span>
+<span class="hide" id="allow65694" >1</span>
+<span class="hide" id="alDel65694" >1</span>
+<span class="L34 nowrap listTitle" id="title65694"><a id="link65694" onClick="return downLevel(65694);" href="/b/PttHot/if1h" ><span class="titleColor">■ [問卦] 台積工程師約女同事出遊被脆姐檢舉到人資了</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 6005">6K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65695" class="row" li="4691029" data-cover="0">
+<span class="hide" id="ti65695" >ihBm</span>
+<span class="point" id="point65695" onclick="selectIt(65695);">●</span>
+<span class="list-num">65695</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgG1" title="推薦值: 2">&nbsp;2</span></span> 
+<span class="L12" title="2026-10-13 20:20:19"><pre>10-13</pre></span>
+<span class="L18" id="author65695"><a class="user" href="/ptt/user/ReiKuromiya/post" target="_blank">(ReiKuromiya.)</a></span>
+<span class="hide" id="isAuthor65695" >0</span>
+<span class="hide" id="allow65695" >1</span>
+<span class="hide" id="alDel65695" >1</span>
+<span class="L34 nowrap listTitle" id="title65695"><a id="link65695" onClick="return downLevel(65695);" href="/b/PttHot/ihBm" ><span class="titleColor">■ [正妹] 南韓數學老師</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5279">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65696" class="row" li="4692020" data-cover="0">
+<span class="hide" id="ti65696" >ii3o</span>
+<span class="point" id="point65696" onclick="selectIt(65696);">●</span>
+<span class="list-num">65696</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"></span> 
+<span class="L12" title="2026-10-18 20:04:47"><pre>10-18</pre></span>
+<span class="L18" id="author65696"><a class="user" href="/ptt/user/ReiKuromiya/post" target="_blank">(ReiKuromiya.)</a></span>
+<span class="hide" id="isAuthor65696" >0</span>
+<span class="hide" id="allow65696" >1</span>
+<span class="hide" id="alDel65696" >1</span>
+<span class="L34 nowrap listTitle" id="title65696"><a id="link65696" onClick="return downLevel(65696);" href="/b/PttHot/ii3o" ><span class="titleColor">■ [正妹] 南港室內設計衛展浴攤位模特</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgR1" title="累積人氣: 5591">5K</span></span>
+</div></div>
+
+<div class="row2">
+<div id="row65697" class="row" li="1255923" data-cover="0">
+<span class="hide" id="ti65697" >59l9</span>
+<span class="point" id="point65697" onclick="selectIt(65697);">●</span>
+<span class="L2 fgY1">　 ★</span>
+<span class="L7 fgB1">
+</span>
+<span class="L8 text_mark"></span>
+<span class="L9"><span class="fgR1" title="推薦值: 126">爆</span></span> 
+<span class="L12" title="2013-02-14 07:05:54"><pre><span class="fgB1">02-14</span></pre></span>
+<span class="L18" id="author65697"><a class="user" href="../user/Knuckles">Knuckles</a></span>
+<span class="hide" id="isAuthor65697" >0</span>
+<span class="hide" id="allow65697" >1</span>
+<span class="hide" id="alDel65697" >1</span>
+<span class="L34 nowrap listTitle" id="title65697"><a id="link65697" onClick="return downLevel(65697);" href="/b/PttHot/59l9" ><span class="titleColor fgC1">□ <span class="fgW1">[公告]</span> PTT 熱門文章板 開板成功</span></a></span>
+<span class="R0 bgB">
+	/<span class="fgG1" title="累積人氣: 86876">8W</span></span>
+</div></div>
+<script type="text/javascript">
+//ri = 0;
+now = 65697;
+end = 65697;
+num_bot = 1;
+from = 65678;
+tiArray = eval(["i7jV","i8dQ","i8eI","i8lj","i8l3","i6e2","i94E","i9vb","i9ED","ibVZ","ibXU","icVd","icB0","idcQ","i9xL","iePT","if1h","ihBm","ii3o","59l9"]);
+riArray = eval([]);
+riList = eval(["4318047","4321514","4321568","4321977","4321961","4313838","4324788","4326433","4327015","4335783","4335902","4339579","4338326","4340672","4326593","4346937","4347643","4357568","4359306","1227547"]);
+ft = '';
+fa = '';
+fn = '';
+fr = '';
+find_type = 0;
+(function(window){
+	var g = window.g || {};
+	g.csrf_code = '';
+})(window);
+</script>
+</div>
+
+<div id="list_action" class="list_bot">
+<span title="Select">t)選取</span>
+<span title="Add in My Text">M)收藏</span>
+<span title="Transfer to another board">^x)轉錄</span>
+<span title="Response">r)回覆</span> 
+<span title="Edit">e)編輯</span>
+<span title="Title modify">T)改標題</span>
+<span title="Delete">d)刪除</span>
+<span class="btn" onclick="findType()" title="Find">^f)搜尋</span>
+</div>
+
+<div class="topRight">
+<a onClick="return listUpLevel();" href="./b_list?bi=796" title="Upper Level(q,u)">上一層(←)</a>
+<a onClick="pointIt(1);return false;" href="PttHot?pn=1&init=0" title="(Home,H)">首頁</a>
+<a onClick="return PageUp();" href="PttHot?pn=65677&init=0" title="(PgUp,P)">上一頁</a>
+<a onClick="return PageDn();" href="PttHot?pn=65697&init=0" title="(PgDn,N)">下一頁</a>
+<a onClick="pointIt(end);return false;" href="PttHot?pn=65697&init=0" title="(End,G)">末頁</a>
+</div>
+
+
+<script type="text/javascript">
+document.title = '看板《PttHot》批踢踢熱門文章'+' - Disp BBS';
+//page = 'list';
+bi = 796;
+bn = 'PttHot';
+pi = -1;
+b_from = 1;
+b_from_addr = '../b/b_list';
+b_pi = '0';
+//isLogin = 0;
+isFriend = 0;
+isBM = 0;
+//position = eval();
+haveInit = 0; 
+b_post = 2;
+b_hide_f = 0;
+sys_load = 0.3486328125;
+(function(window){
+	var g = window.g || {};
+	g.bi = 796;
+	g.bn = 'PttHot';
+})(window);
+</script>
+
+
+</div>
+
+<div id="read" class="scroll_div">
+	</div>
+
+</div><!-- /#main -->
+
+
+
+<script type="text/javascript">
+page = 'list';
+isLogin = 0;
+un = 'guest';
+ui = 0;
+position = eval(["\u4e3b\u9078\u55ae","..\/menu.php?","\u770b\u677f\u9078\u55ae","..\/b\/?","\u770b\u677f\u5217\u8868","..\/b\/b_list","\u770b\u677f: \u6279\u8e22\u8e22\u71b1\u9580\u6587\u7ae0","..\/b\/PttHot?init=0"]);var use_preload = 1;
+//var use_preload = 0;
+size = 20;
+auto_size = 0;
+isDirectLink = 0;
+showAds = 0;
+allow_adsense = 0;
+isMobile = 0;
+use_js_scroll = 0;
+bi_over18 = [251];
+show_over18 = 0;
+isTemp = 0;
+</script>
+
+<script src='/include/jquery/jquery-3.7.1.min.js'></script>
+<script src='/include/jquery/jquery-ui-1.10.3.custom.min.js'></script>
+<script type="text/javascript">
+sys_load = '0.3486328125';
+
+</script>
+<script src="/include/78sys.js"></script>
+<script src="/include/1yt_watch.js"></script>
+<script src="/include/5form.js"></script>
+<script src="/b/105index.js"></script>
+<script src="/b/528read.js"></script>
+<script src="/b/12form.js"></script>
+<script src="/b/67board.js"></script>
+<script src="/b/4class.js"></script>
+<script src="/b/46list.js"></script>
+
+<div id="footer" class="center clear">
+<span style="font-size:12px;">
+<a rel="nofollow" href="/tos">服務條款</a>
+<a rel="nofollow" href="/privacy">隱私權政策</a>
+<a rel="nofollow" href="/contact">聯絡我們</a>
+<a href="https://www.facebook.com/dispbbs" target="_blank">FB專頁</a>
+</span>
+</div>
+
+</div><!-- /#wrapper -->
+
+
+
+
+</body>
+</html>
