@@ -441,8 +441,9 @@ def pick_top(tlist, n=5):
     3. 還不滿 5 個：可拍題放寬到 3 個，再不夠就不限路線——寧可多放一個同路線的高分題，也不拿觀望題湊多樣性；
     4. 可拍以上的都用完了，才用分數較低的題目補（一樣先最多 2 個）。
     頻道已經在做的題目不放進 TOP（還是會出現在題庫裡）。"""
+    exact = lambda t: t.get('total', t['score'])  # noqa: E731 — 沒四捨五入的總分（跟 App 一樣），舊資料沒有就用 score
     pool = sorted((t for t in tlist if (t.get('done') or {}).get('status') not in ('done', 'making')),
-                  key=lambda t: -t['score'])
+                  key=lambda t: -exact(t))
     out, by_p, by_t = [], {}, {}
 
     def ok(t, cap):
@@ -457,11 +458,11 @@ def pick_top(tlist, n=5):
         for t in pool:
             if len(out) >= n:
                 break
-            if t in out or topics.shown(t['score']) < floor:
+            if t in out or topics.shown(exact(t)) < floor:
                 continue
             if ok(t, cap):
                 take(t)
-    out.sort(key=lambda t: -t['score'])
+    out.sort(key=lambda t: -exact(t))
     return [t['id'] for t in out]
 
 

@@ -157,6 +157,7 @@ def trim_details(d: dict) -> dict:
         'langs': _langs(d.get('supported_languages')),
         'plat': [k for k, v in (d.get('platforms') or {}).items() if v],
         'genres': [g.get('description') for g in (d.get('genres') or []) if g.get('description')][:5],
+        'genre_ids': [str(g['id']) for g in (d.get('genres') or []) if g.get('id') is not None],
         'cats': [c.get('description') for c in (d.get('categories') or []) if c.get('description')][:12],
         'price': (price.get('final') or 0) / 100 if price else None,
         'price_text': price.get('final_formatted') if price else None,
@@ -225,12 +226,16 @@ def reviews_url(appid, lang: str, n: int = 100) -> str:
 
 
 def _reviews_body(r) -> dict:
-    """新介面沒有 success 欄位，要看 HTTP 狀態；內容包在 response 裡。"""
+    """新介面沒有 success 欄位，要看 HTTP 狀態；內容包在 response 裡。
+    查不到評論（還沒有人評論）時 Steam 這類介面會回 {"response": {}}：當成 0 篇存起來，不算失敗、也不會每輪重抓。"""
     if r.status_code != 200:
         raise RuntimeError(f'HTTP {r.status_code}')
-    j = r.json() or {}
-    body = j.get('response', j)
-    if not isinstance(body, dict) or ('query_summary' not in body and 'reviews' not in body):
+    try:
+        j = r.json()
+    except ValueError:
+        raise RuntimeError('回應不是 JSON（可能被轉到網頁）') from None
+    body = j.get('response') if isinstance(j, dict) else None
+    if not isinstance(body, dict):
         raise RuntimeError('回應格式不對')
     return body
 

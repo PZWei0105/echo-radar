@@ -149,15 +149,24 @@ _F2P_CATS = re.compile(r'應用程式內購買|In-App Purchases', re.I)
 _GACHA_HINT = re.compile(r'gacha|抽卡|轉蛋|卡池|角色池|二次元', re.I)
 
 
-# Steam 把工具軟體也放在商店裡（桌布、剪輯、建模）：這些分類的不當成遊戲題目
-_SOFTWARE_GENRES = {'公用程式', '動畫製作與建模', '設計與插畫', '影片製作', '音訊製作', '照片編修', '網頁發佈',
+# Steam 把工具軟體也放在商店裡（桌布、剪輯、建模），有的還標成 game（Wallpaper Engine）：這些不當成遊戲題目。
+# 看分類代號（Steam 的軟體分類是 50～60）；舊快取沒有代號就看名稱（照 Steam 繁中商店的寫法：Wallpaper Engine 是
+# 「動畫和建模、設計和繪圖、圖像編輯」，OBS 是「工具、影片製作」）。同時有動作、角色扮演這類遊戲分類的（教育遊戲）照樣算遊戲。
+_SOFTWARE_GENRE_IDS = {str(i) for i in range(50, 61)}
+_SOFTWARE_GENRES = {'動畫和建模', '設計和繪圖', '圖像編輯', '工具', '影片製作', '音訊製作', '音效製作', '網頁發佈', '網頁發布',
                     '軟體訓練', '教育', '會計', '遊戲開發', 'Utilities', 'Animation & Modeling', 'Design & Illustration',
                     'Video Production', 'Audio Production', 'Photo Editing', 'Web Publishing', 'Software Training',
                     'Education', 'Accounting', 'Game Development'}
+_GAME_GENRE_IDS = {'1', '2', '3', '9', '18', '25', '28', '29'}
+_GAME_GENRES = {'動作', '策略', '角色扮演', '競速', '運動', '冒險', '模擬', '大型多人連線', 'Action', 'Strategy', 'RPG',
+                'Racing', 'Sports', 'Adventure', 'Simulation', 'Massively Multiplayer'}
 
 
 def is_software(g) -> bool:
-    return bool(set((g.details or {}).get('genres') or []) & _SOFTWARE_GENRES) if g else False
+    det = (g.details or {}) if g else {}
+    ids, names = set(det.get('genre_ids') or []), set(det.get('genres') or [])
+    soft = bool(ids & _SOFTWARE_GENRE_IDS or names & _SOFTWARE_GENRES)
+    return soft and not (ids & _GAME_GENRE_IDS or names & _GAME_GENRES)
 
 
 def is_live_f2p(g) -> bool:
@@ -673,6 +682,7 @@ class Builder:
                        'ease': round(clamp(ease), 1)}
         raw = total(t['scores'], w)
         t['score'] = round(raw, 1)
+        t['total'] = raw  # 沒四捨五入的總分：TOP 5 的門檻與排序用它，才會跟 App 一模一樣（score 只是給人看的）
         t['grade'] = grade(raw)
         t['stations'] = cards
         t['rising'] = sum(1 for c in cards if c.get('up'))
@@ -721,7 +731,7 @@ class Builder:
                 notable = notable and (summ['global'] >= 30 or summ['tw'] >= 30 or g.big)
             if not notable:
                 continue
-            if g.details and (g.details.get('type') not in (None, 'game') or is_software(g)):
+            if not (g.zh or g.en) or (g.details and (g.details.get('type') not in (None, 'game') or is_software(g))):
                 continue
             name = g.name
             if days > 3:
@@ -801,8 +811,8 @@ class Builder:
             wz = g.sig.get('wiki_en') or {}
             if (wz.get('spike') or 0) >= 2.5 and (wz.get('avg7') or 0) >= 1500:
                 reasons.append(f"英文維基瀏覽突然暴增 {wz['spike']:.1f} 倍")
-            # 一定要有商店資料確認是遊戲：沒有資料的（只有 appid、名字是「App 123」）或軟體（Wallpaper Engine 這類工具）不算
-            if not g.details or g.details.get('type') != 'game' or is_software(g) or is_live_f2p(g):
+            # 一定要有商店資料確認是遊戲、而且有正式名稱：只有 appid（名字是「App 123」）或軟體（Wallpaper Engine 這類工具）不算
+            if not g.details or not (g.zh or g.en) or g.details.get('type') != 'game' or is_software(g) or is_live_f2p(g):
                 continue
             if not reasons:
                 continue

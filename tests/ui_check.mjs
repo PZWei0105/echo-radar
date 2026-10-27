@@ -66,7 +66,8 @@ async function open(opts = {}) {
   await page.waitForTimeout(200);
   const rows = await page.$$eval('#rows .rbtn', (els) => els.map((e) => [e.dataset.topic, Number(e.querySelector('.rs').textContent)]));
   const by = Object.fromEntries(radar.topics.map((t) => [t.id, t]));
-  const bad = rows.filter(([id, s]) => !by[id] || Math.floor(by[id].score + 0.5) !== s);
+  // 後台存的 score 已經四捨五入到一位小數，要用沒四捨五入的 total 比（舊資料沒有就用 score）
+  const bad = rows.filter(([id, s]) => !by[id] || Math.floor((by[id].total ?? by[id].score) + 0.5) !== s);
   ok(rows.length === radar.topics.length && bad.length === 0, `題庫 ${rows.length} 題分數都跟後台一樣（不一致：${bad.slice(0, 3)}）`);
   await page.screenshot({ path: path.join(shotDir, 'phone-list.png') });
   for (const v of ['cal', 'plan', 'set']) {

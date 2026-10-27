@@ -56,6 +56,7 @@ def test_pipeline(tmp: pathlib.Path):
         if not check(ok, f'題目欄位齊全：{t.get("id")}'):
             break
         check(t['grade'] == topics.grade(topics.total(t['scores'], meta['channel']['weights'])), f'等級與分數一致：{t["id"]}')
+        check(t.get('total') == topics.total(t['scores'], meta['channel']['weights']), f'有沒四捨五入的總分：{t["id"]}')
         check(len(t['angles']) == 3, f'角度三選一：{t["id"]}')
         check('《App ' not in t['title'], f'題目沒有暫代名稱：{t["title"]}')
         g = t.get('game') or {}
@@ -102,6 +103,8 @@ def test_reviews():
                 return R(b'<html>Steam store</html>', 200, 'https://store.steampowered.com/')
             if self.mode == '429':
                 return R(b'', 429)
+            if self.mode == 'empty':  # 還沒有人評論
+                return R(b'{"response":{}}', 200, url)
             name = 'steam_reviews_new_tc' if '%22languages%22%3A%5B%22tchinese' in url else 'steam_reviews_new_all'
             return R(raw_bytes(name), 200, url)
     cache, health = {}, {}
@@ -120,6 +123,10 @@ def test_reviews():
         steam.reviews(H(mode), [1, 2], cache, health)
         check(not cache and not health['steam_reviews']['ok'] and '失敗' in health['steam_reviews'].get('err', ''),
               f'{mode} 時記錄錯誤原因、不寫入壞資料（{health["steam_reviews"]}）')
+    cache, health = {}, {}
+    steam.reviews(H('empty'), [3], cache, health)
+    check(health['steam_reviews']['ok'] and not health['steam_reviews'].get('err') and '3' in cache and cache['3']['all'] is None,
+          f'還沒有人評論：存成 0 篇、不算失敗（{health["steam_reviews"]}）')
 
 
 def test_ptt():
@@ -204,6 +211,16 @@ def test_why():
         check(got == f'{want}。{tt}', f'{why}（{got}）')
 
 
+def test_software():
+    section('軟體不當成遊戲題目')
+    G = lambda genres, ids=None: type('G', (), {'details': {'genres': genres, **({'genre_ids': ids} if ids else {})}})()  # noqa: E731
+    check(topics.is_software(G(['休閒', '獨立製作', '動畫和建模', '設計和繪圖', '圖像編輯'])), 'Wallpaper Engine（Steam 繁中分類名稱）是軟體')
+    check(topics.is_software(G(['工具', '影片製作'])), 'OBS 是軟體')
+    check(topics.is_software(G(['休閒'], ['4', '57'])), '看分類代號（舊名稱對不上也認得）')
+    check(not topics.is_software(G(['角色扮演', '教育'])), '有遊戲分類的教育遊戲照樣是遊戲')
+    check(not topics.is_software(G(['動作', '冒險'], ['1', '25'])), '一般遊戲不是軟體')
+
+
 def test_top5():
     section('TOP 5 規則')
 
@@ -219,6 +236,13 @@ def test_top5():
     tl3 = [T('a', 90, 'spotlight'), T('b', 85, 'spotlight'), T('c', 80, 'spotlight'), T('d', 79, 'spotlight'),
            T('e', 75, 'spotlight', 'sleeper'), T('f', 60, 'issue', 'issue'), T('g', 59, 'season', 'season')]
     check(build.pick_top(tl3) == ['a', 'b', 'c', 'f', 'g'], f'可拍題夠的時候照樣分散路線（{build.pick_top(tl3)}）')
+    # 69.46 分：畫面上是 69（可拍），不能因為先四捨五入成 69.5 就被當成 70 分的必拍
+    w = {'demand': 40, 'timing': 25, 'fit': 20, 'ease': 15}
+    raw = topics.total({'demand': 80, 'timing': 88, 'fit': 70, 'ease': 50}, w)
+    c = {**T('c', round(raw, 1), 'spotlight'), 'total': raw}
+    tl4 = [T('a', 90, 'spotlight'), T('b', 85, 'spotlight'), c, T('d', 66, 'issue', 'issue'), T('e', 65, 'season', 'season'),
+           T('f', 64, 'hardware', 'hardware')]
+    check(topics.shown(raw) == 69 and build.pick_top(tl4) == ['a', 'b', 'd', 'e', 'f'], f'門檻照畫面上的整數分數（{raw:.3f}：{build.pick_top(tl4)}）')
 
 
 def deadline_cases(path: pathlib.Path):
@@ -257,6 +281,7 @@ def main():
         test_entities()
         test_rules()
         test_why()
+        test_software()
         test_top5()
         section('App 與後台規則一致（node）')
         deadline_cases(tmp / 'deadline_cases.json')
