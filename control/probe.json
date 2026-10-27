@@ -1,43 +1,26 @@
 [
  {
-  "name": "rv_current_all",
-  "url": "https://store.steampowered.com/appreviews/1867240?json=1&language=all&purchase_type=all&num_per_page=100&filter=recent"
+  "name": "new_ij_all",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D"
  },
  {
-  "name": "rv_current_tc",
-  "url": "https://store.steampowered.com/appreviews/1867240?json=1&language=tchinese&purchase_type=all&num_per_page=100&filter=recent"
+  "name": "new_ij_tc",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D"
  },
  {
-  "name": "rv_current_hd2",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=100&filter=recent"
+  "name": "new_ij_disp_tc",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A1867240%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%2C%22display_language%22%3A%22tchinese%22%7D"
  },
  {
-  "name": "rv_no_purchase",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&num_per_page=100&filter=recent"
+  "name": "new_brackets",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?appid=553850&filter=1&languages%5B0%5D=all&review_type=0&purchase_type=1&num_per_page=100"
  },
  {
-  "name": "rv_small_page",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=20&filter=recent"
+  "name": "new_ij_small_game",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4019220%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D"
  },
  {
-  "name": "rv_cursor",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=100&filter=recent&cursor=*"
- },
- {
-  "name": "rv_filter_all",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=100&filter=all&day_range=30"
- },
- {
-  "name": "rv_bot_ua",
-  "bot_ua": true,
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=100&filter=recent"
- },
- {
-  "name": "rv_summary_only",
-  "url": "https://store.steampowered.com/appreviews/553850?json=1&language=all&purchase_type=all&num_per_page=0"
- },
- {
-  "name": "details_control",
-  "url": "https://store.steampowered.com/api/appdetails?appids=553850&cc=tw&l=tchinese"
+  "name": "new_ij_no_reviews",
+  "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4435490%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D"
  }
 ]
