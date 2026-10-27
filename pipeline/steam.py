@@ -3,8 +3,10 @@
 全部是 Steam 公開的商店／統計端點，不需要金鑰。每個端點各有快取與每輪上限，避免被限流。
 """
 import html as htmllib
+import json
 import re
 import time
+import urllib.parse
 
 from bs4 import BeautifulSoup
 
@@ -15,8 +17,10 @@ SEARCH = ('https://store.steampowered.com/search/results/?query=&start=0&count=1
 MOSTPLAYED = 'https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/'
 PLAYERS = 'https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid={appid}'
 DETAILS = 'https://store.steampowered.com/api/appdetails?appids={appid}&cc=tw&l={lang}'
-REVIEWS = ('https://store.steampowered.com/appreviews/{appid}?json=1&language={lang}'
-           '&purchase_type=all&num_per_page={n}&filter=recent')
+# Steam 在 2026-10-22 停用舊的 store.steampowered.com/appreviews（現在一律轉回商店首頁），
+# 改用官方 Web API 的 IUserReviewsService/GetAppReviews：參數放在 input_json，篩選條件改成數字，回應包在 response 裡。
+# https://partner.steamgames.com/doc/webapi/IUserReviewsService
+REVIEWS = 'https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/'
 HEADER = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/header.jpg'
 STORE = 'https://store.steampowered.com/app/{appid}/'
 
@@ -212,34 +216,57 @@ def _recent(rec: list) -> dict | None:
             'span_d': round(span_d, 1)}
 
 
+def reviews_url(appid, lang: str, n: int = 100) -> str:
+    """最近 n 篇評論（新到舊）＋整體統計。filter 1＝最新、review_type 0＝全部、purchase_type 1＝全部購買管道；
+    評價文字（大多好評、褒貶不一…）用繁體中文。"""
+    q = {'appid': int(appid), 'filter': 1, 'languages': [lang], 'review_type': 0, 'purchase_type': 1,
+         'num_per_page': n, 'display_language': 'tchinese'}
+    return REVIEWS + '?input_json=' + urllib.parse.quote(json.dumps(q, separators=(',', ':')))
+
+
+def _reviews_body(r) -> dict:
+    """新介面沒有 success 欄位，要看 HTTP 狀態；內容包在 response 裡。"""
+    if r.status_code != 200:
+        raise RuntimeError(f'HTTP {r.status_code}')
+    j = r.json() or {}
+    body = j.get('response', j)
+    if not isinstance(body, dict) or ('query_summary' not in body and 'reviews' not in body):
+        raise RuntimeError('回應格式不對')
+    return body
+
+
 def reviews(http, appids, cache: dict, health, budget: int = 40):
     """全球評價、最近 100 篇的好評率（抓負評潮）、繁中玩家評價。每 5.5 小時更新。"""
     t0 = now()
     todo = [a for a in appids if hours_since((cache.get(str(a)) or {}).get('at'), t0) >= REVIEWS_TTL_H]
     done = errs = 0
+    last = None
     for a in todo[:budget]:
         try:
-            r = http.get(REVIEWS.format(appid=a, lang='all', n=100), timeout=25)
+            r = http.get(reviews_url(a, 'all'), timeout=25)
             if r.status_code == 429:
                 errs += 1
+                last = '被 Steam 限流（HTTP 429）'
                 break
-            j = r.json() or {}
+            j = _reviews_body(r)
             allq = _summary(j.get('query_summary'))
             recent = _recent(j.get('reviews') or [])
             time.sleep(0.3)
-            r2 = http.get(REVIEWS.format(appid=a, lang='tchinese', n=100), timeout=25)
             tc = tc_recent = None
-            if r2.status_code == 200:
-                j2 = r2.json() or {}
+            try:
+                j2 = _reviews_body(http.get(reviews_url(a, 'tchinese'), timeout=25))
                 tc = _summary(j2.get('query_summary'))
                 tc_recent = _recent(j2.get('reviews') or [])
+            except Exception:  # noqa: BLE001 — 繁中評論抓不到不影響全球評價
+                pass
             cache[str(a)] = {'at': iso(t0), 'all': allq, 'recent': recent, 'tc': tc, 'tc_recent': tc_recent}
             done += 1
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             errs += 1
+            last = str(e)[:60] or type(e).__name__
         time.sleep(0.3)
     health['steam_reviews'] = {'ok': errs == 0 or done > 0, 'n': done, 'todo': max(0, len(todo) - done),
-                               'at': iso(t0), **({'err': f'{errs} 次失敗'} if errs else {})}
+                               'at': iso(t0), **({'err': f'{errs} 次失敗（{last}）'} if errs else {})}
 
 
 def players(http, appids, hist: dict, health, budget: int = 120, skip: dict | None = None):

@@ -124,7 +124,7 @@ a { color: var(--e2); text-underline-offset: 3px; }
 }
 .rk { font-family: var(--f-num); font-weight: 700; font-stretch: 70%; font-size: 30px; line-height: 1; color: var(--ink); }
 .tmain { min-width: 0; display: grid; gap: 5px; }
-.tt { font-weight: 700; font-size: 16px; line-height: 1.4; }
+.tt { font-weight: 700; font-size: 16px; line-height: 1.4; text-wrap: pretty; }
 .tmeta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .why { font-size: 13px; line-height: 1.5; color: var(--mist); }
 .tscore { display: grid; justify-items: end; align-content: start; gap: 2px; padding-right: 2px; }
@@ -165,7 +165,7 @@ a { color: var(--e2); text-underline-offset: 3px; }
 .rbtn { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 12px 0; border: 0; background: none; text-align: left; }
 .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent), 0 0 12px color-mix(in srgb, var(--c) 60%, transparent); justify-self: center; }
 .rmain { min-width: 0; display: grid; gap: 4px; }
-.rt { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.rt { font-size: 15px; font-weight: 600; line-height: 1.4; text-wrap: pretty; }
 .rs { font-family: var(--f-num); font-weight: 700; font-stretch: 80%; font-size: 20px; color: var(--c); }
 .empty { padding: 28px 4px; color: var(--mist); text-align: center; font-size: 14px; }
 
@@ -185,7 +185,7 @@ a { color: var(--e2); text-underline-offset: 3px; }
 .ibtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ibtn[aria-pressed="true"] { border-color: var(--e5); color: var(--e5); }
 .hero-img { display: block; width: 100%; aspect-ratio: 460 / 215; object-fit: cover; border-radius: var(--r-m); background: var(--land); }
-.sh-title { margin: 14px 0 8px; font-size: 22px; line-height: 1.35; font-weight: 800; }
+.sh-title { margin: 14px 0 8px; font-size: 22px; line-height: 1.35; font-weight: 800; text-wrap: pretty; }
 .sh-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .gauge { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; margin: 16px 0 6px; }
 .gauge-n { position: relative; width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, color-mix(in srgb, var(--c) 55%, transparent) 0 28%, color-mix(in srgb, var(--c) 18%, transparent) 55%, transparent 72%); }
@@ -268,6 +268,16 @@ a { color: var(--e2); text-underline-offset: 3px; }
 .btn.primary { background: var(--act); border-color: var(--act); color: var(--act-ink); }
 .btn.ghost { background: none; }
 .btn.wide { width: 100%; }
+
+/* 更新紀錄：每一點用一格回波色塊當記號 */
+.upd { list-style: none; margin: 0; padding: 0; }
+.upd li { position: relative; padding: 9px 0 9px 20px; border-top: 1px solid var(--grid); font-size: 14.5px; line-height: 1.65; }
+.upd li:first-child { border-top: 0; }
+.upd li::before { content: ""; position: absolute; left: 1px; top: 17px; width: 9px; height: 9px; border-radius: 2px; background: var(--e2); }
+.upd-h { margin: 26px 0 0; font-size: 16px; font-weight: 800; }
+.upd-d { margin: 0 0 4px; font-family: var(--f-num); font-size: 13px; color: var(--fog); }
+.upd-ok { margin: 18px 0 8px; }
+.sh-title:focus { outline: none; }
 .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* 企劃包預覽 */

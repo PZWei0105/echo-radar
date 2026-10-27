@@ -115,55 +115,84 @@ export class Scope {
     ctx.drawImage(this.low, 0, 0, size, size);
     ctx.restore();
 
-    // 文字：距離環與路線
+    // 文字：距離環與路線。先量好每個標籤的位置（名次章會避開），等指引線畫完再畫字，線才不會劃過字
+    const ZH = '"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+    const texts = [];
     ctx.save();
-    ctx.font = '600 21px "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
     // 距離標籤放在「檔期」和「爭議」兩個扇區的分界線上，不會壓到回波
+    ctx.font = `600 21px ${ZH}`;
     const la = this._sector(1).start;
     BANDS.slice(0, 4).forEach((b) => {
       const x = cx + Math.cos(la) * R * b.outer - 14;
       const y = cy + Math.sin(la) * R * b.outer + 4;
-      ctx.fillStyle = 'rgba(6,17,27,.75)';
       const w = ctx.measureText(b.label).width;
-      ctx.fillRect(x - 3, y - 12, w + 6, 24);
-      ctx.fillStyle = '#7f97a8';
-      ctx.fillText(b.label, x, y);
+      texts.push({ t: b.label, x, y, font: `600 21px ${ZH}`, align: 'left', bg: 'rgba(6,17,27,.75)', fg: '#7f97a8', box: [x - 3, y - 12, w + 6, 24] });
     });
-    ctx.font = '700 24px "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
-    ctx.textAlign = 'center';
+    ctx.font = `700 24px ${ZH}`;
     PILLARS.forEach((p, i) => {
       const s = this._sector(i);
       const a = (s.start + s.end) / 2;
-      const rr = R * 0.9;
-      const x = cx + Math.cos(a) * rr;
-      const y = cy + Math.sin(a) * rr;
+      const x = cx + Math.cos(a) * R * 0.9;
+      const y = cy + Math.sin(a) * R * 0.9;
       const t = this.labels[p] || p;
-      ctx.fillStyle = 'rgba(6,17,27,.7)';
       const w = ctx.measureText(t).width;
-      ctx.fillRect(x - w / 2 - 6, y - 15, w + 12, 30);
-      ctx.fillStyle = '#c9d8e3';
-      ctx.fillText(t, x, y);
+      texts.push({ t, x, y, font: `700 24px ${ZH}`, align: 'center', bg: 'rgba(6,17,27,.7)', fg: '#c9d8e3', box: [x - w / 2 - 6, y - 15, w + 12, 30] });
     });
     ctx.restore();
 
-    // TOP 5 名次
+    // TOP 5 名次：好幾題都是「今天」時會擠在中心互相蓋住，名次章照名次順序擺，撞到別的名次章或文字標籤就往外或往旁邊挪，
+    // 再拉一條細線指回回波（真的擺不開時，至少不蓋到別的名次章）
     ctx.save();
-    ctx.textAlign = 'center';
+    const placed = [];
+    const offText = (nx, ny) => texts.every(({ box: [x, y, w, h] }) => Math.hypot(nx - Math.max(x, Math.min(nx, x + w)), ny - Math.max(y, Math.min(ny, y + h))) >= 19);
+    const fits = (nx, ny, avoidText) => Math.hypot(nx - cx, ny - cy) <= R - 22 && placed.every((q) => Math.hypot(q.x - nx, q.y - ny) >= 38)
+      && (!avoidText || offText(nx, ny));
+    for (const b of this.blobs.filter((x) => x.rank).sort((a, c) => a.rank - c.rank)) {
+      const ang = Math.atan2(b.y - cy, b.x - cx);
+      const tries = [[0, 0]];
+      for (const d of [40, 76, 112]) {
+        tries.push([Math.cos(ang) * d, Math.sin(ang) * d]);
+        for (const side of [1, -1]) tries.push([Math.cos(ang + side * Math.PI / 2) * d, Math.sin(ang + side * Math.PI / 2) * d]);
+      }
+      const [dx, dy] = tries.find(([x, y]) => fits(b.x + x, b.y + y, true)) || tries.find(([x, y]) => fits(b.x + x, b.y + y, false)) || [0, 0];
+      b.bx = b.x + dx;
+      b.by = b.y + dy;
+      placed.push({ x: b.bx, y: b.by });
+      if (dx || dy) {
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.bx, b.by);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(232,240,246,.7)';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#e8f0f6';
+        ctx.fill();
+      }
+    }
     ctx.textBaseline = 'middle';
+    for (const { t, x, y, font, align, bg, fg, box } of texts) {
+      ctx.fillStyle = bg;
+      ctx.fillRect(...box);
+      ctx.font = font;
+      ctx.textAlign = align;
+      ctx.fillStyle = fg;
+      ctx.fillText(t, x, y);
+    }
+    ctx.textAlign = 'center';
+    ctx.font = '800 22px "Archivo","Helvetica Neue",Arial,sans-serif';
     for (const b of this.blobs) {
       if (!b.rank) continue;
       ctx.beginPath();
-      ctx.arc(b.x, b.y, 17, 0, Math.PI * 2);
+      ctx.arc(b.bx, b.by, 17, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(6,17,27,.86)';
       ctx.fill();
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#e8f0f6';
       ctx.stroke();
       ctx.fillStyle = '#e8f0f6';
-      ctx.font = '800 22px "Archivo","Helvetica Neue",Arial,sans-serif';
-      ctx.fillText(String(b.rank), b.x, b.y + 1);
+      ctx.fillText(String(b.rank), b.bx, b.by + 1);
     }
     ctx.restore();
 
@@ -272,7 +301,8 @@ export class Scope {
     let bd = Infinity;
     const cell = this.size / this.grid;
     for (const b of this.blobs) {
-      const d = Math.hypot(b.x - x, b.y - y);
+      // 名次章挪開了也點得到
+      const d = Math.min(Math.hypot(b.x - x, b.y - y), b.rank && b.bx != null ? Math.hypot(b.bx - x, b.by - y) : Infinity);
       const lim = Math.max(26, b.r * cell * 1.3);
       if (d < lim && d < bd) {
         bd = d;

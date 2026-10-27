@@ -134,7 +134,7 @@ export function makeBrief(t, angle, ctx) {
   L.push(`- 題目：${q(t.title)}`);
   if (angle) L.push(`- 角度：【${angle.label}】${plain(angle.title)}——${plain(angle.hook)}`);
   L.push(`- 路線：${t.pillar_label}（${t.type_label}）；格式：${f.name}`);
-  L.push(`- 為什麼是現在：${t.why}`);
+  L.push(`- 為什麼是現在：${t._why || t.why}`);
   if (w.publish_by) {
     const sb = ctx.startBy || w.start_by;
     L.push(`- 時效：${sb ? `最晚 ${fmtDate(sb)} 開工、` : ''}${fmtDate(w.publish_by)} 前上架${w.close ? `；${fmtDate(w.close)} 之後就不新鮮了` : ''}`);
@@ -215,7 +215,7 @@ export function makePrompt(t, angle, ctx) {
   L.push('');
   L.push(`題目：${q(t.title)}（${t.pillar_label}／${t.type_label}）`);
   L.push(`雷達總分 ${Math.round(ctx.score)}（${ctx.grade}）：需求 ${Math.round(ctx.scores.demand)}、時效 ${Math.round(ctx.scores.timing)}、契合 ${Math.round(ctx.scores.fit)}、好做 ${Math.round(ctx.scores.ease)}`);
-  L.push(`為什麼是現在：${t.why}`);
+  L.push(`為什麼是現在：${t._why || t.why}`);
   if ((t.stations || []).length) {
     L.push('測站觀測：');
     for (const s of t.stations.slice(0, 6)) L.push(`- ${ctx.stationLabel(s.id)}：${plain(s.text)}`);

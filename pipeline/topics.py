@@ -149,6 +149,17 @@ _F2P_CATS = re.compile(r'應用程式內購買|In-App Purchases', re.I)
 _GACHA_HINT = re.compile(r'gacha|抽卡|轉蛋|卡池|角色池|二次元', re.I)
 
 
+# Steam 把工具軟體也放在商店裡（桌布、剪輯、建模）：這些分類的不當成遊戲題目
+_SOFTWARE_GENRES = {'公用程式', '動畫製作與建模', '設計與插畫', '影片製作', '音訊製作', '照片編修', '網頁發佈',
+                    '軟體訓練', '教育', '會計', '遊戲開發', 'Utilities', 'Animation & Modeling', 'Design & Illustration',
+                    'Video Production', 'Audio Production', 'Photo Editing', 'Web Publishing', 'Software Training',
+                    'Education', 'Accounting', 'Game Development'}
+
+
+def is_software(g) -> bool:
+    return bool(set((g.details or {}).get('genres') or []) & _SOFTWARE_GENRES) if g else False
+
+
 def is_live_f2p(g) -> bool:
     """免費遊玩＋內購（多半是抽卡或長期營運型），頻道不做這類宣傳。"""
     det = (g.details or {}) if g else {}
@@ -224,15 +235,36 @@ def _ease(*, official=False, multi=False, trailer=False, demo=False, rumor_only=
     return clamp(e), why
 
 
+def _outside(t: str, sep: str) -> list[str]:
+    """只在全形括號外面切開：括號裡（遊戲名、漲跌幅）的冒號與頓號不算。"""
+    out, cur, depth = [], [], 0
+    for ch in t:
+        if ch == '（':
+            depth += 1
+        elif ch == '）':
+            depth = max(0, depth - 1)
+        if ch == sep and depth == 0:
+            out.append(''.join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    out.append(''.join(cur))
+    return out
+
+
 def _why_now(cards: list[dict], timing_text: str, limit=2) -> str:
     own = [c for c in cards if not (c.get('text') or '').startswith('（')]
     rest = [c for c in cards if (c.get('text') or '').startswith('（')]
     picks = (sorted(own, key=lambda c: (c.get('up', False), c.get('level', 0)), reverse=True)
              + sorted(rest, key=lambda c: c.get('level', 0), reverse=True))[:limit]
     def short(c):
-        t = c['text'].split('：')[0] if c['id'] in ('gnews', 'reddit', 'ptt') else c['text']
-        bits = t.split('、')
-        return '、'.join(bits[:2])
+        # 括號裡的媒體名單、新聞標題拿掉（太長，切開還會剩「（Engadget、Game Developer」這種半個括號）；
+        # 漲跌幅「（比上週 +55%）」是升溫的證據要留著，開頭的（遊戲名）是在說這是哪款遊戲的數字也留著
+        t = re.sub(r'(?<=.)（[^（）]*）', lambda m: m.group() if '%' in m.group() else '', c['text'])
+        if c['id'] in ('gnews', 'reddit', 'ptt'):
+            t = _outside(t, '：')[0]  # 冒號後面是文章標題
+        t = re.sub(r'，最熱$', '', t)
+        return '、'.join(_outside(t, '、')[:2])
     parts = [short(c) for c in picks]
     parts = [p for p in parts if p]
     s = '；'.join(parts)
@@ -554,7 +586,7 @@ def _community_cards(ptt_hits, rd_hits):
         top = ptt_hits[0]
         push = '爆' if top['push'] >= 100 else f"{top['push']} 推"
         cards.append({'id': 'ptt', 'level': lv['ptt'], 'up': len(ptt_hits) >= 2,
-                      'text': f"{len(ptt_hits)} 篇在討論，最熱：{top['t'][:30]}（{push}）", 'url': top['u']})
+                      'text': f"PTT {len(ptt_hits)} 篇在討論，最熱：{top['t'][:30]}（{push}）", 'url': top['u']})
     if rd_hits:
         pseudo = {'best': rd_hits[0].get('rank') or 25, 'n': len(rd_hits)}
         lv['reddit'] = S.reddit_level(pseudo)
@@ -689,7 +721,7 @@ class Builder:
                 notable = notable and (summ['global'] >= 30 or summ['tw'] >= 30 or g.big)
             if not notable:
                 continue
-            if g.details and g.details.get('type') not in (None, 'game'):
+            if g.details and (g.details.get('type') not in (None, 'game') or is_software(g)):
                 continue
             name = g.name
             if days > 3:
@@ -769,7 +801,8 @@ class Builder:
             wz = g.sig.get('wiki_en') or {}
             if (wz.get('spike') or 0) >= 2.5 and (wz.get('avg7') or 0) >= 1500:
                 reasons.append(f"英文維基瀏覽突然暴增 {wz['spike']:.1f} 倍")
-            if is_live_f2p(g) or ((g.details or {}).get('type') not in (None, 'game')):
+            # 一定要有商店資料確認是遊戲：沒有資料的（只有 appid、名字是「App 123」）或軟體（Wallpaper Engine 這類工具）不算
+            if not g.details or g.details.get('type') != 'game' or is_software(g) or is_live_f2p(g):
                 continue
             if not reasons:
                 continue

@@ -1,6 +1,6 @@
 // 回波的離線外殼：介面先用快取打開，資料一律先問網路（沒網路才用上次的）。
 const V = 'echo-__BUILD__';
-const SHELL = ['./', 'index.html', 'styles.css?v=__BUILD__', 'app.js?v=__BUILD__', 'radar.js?v=__BUILD__', 'brief.js?v=__BUILD__',
+const SHELL = ['./', 'index.html', 'styles.css?v=__BUILD__', 'app.js?v=__BUILD__', 'radar.js?v=__BUILD__', 'brief.js?v=__BUILD__', 'updates.js?v=__BUILD__',
   'manifest.webmanifest',
   'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => {

@@ -1,10 +1,17 @@
-"""用 probe 抓到的原始回應測試（不連網）。PROBE 環境變數指向 probe-results 分支解開的資料夾。"""
+"""離線測試用的假網路：用 tests/fixtures/raw 裡錄好的原始回應（.txt.gz）回答，不連網。
+
+錄的是真實回應（2026-10-20 從 GitHub 實測；Steam 新評論介面是 2026-10-28 實測）。
+PROBE 環境變數可以指向別的資料夾（裡面放 raw/<名稱>.txt 或 .txt.gz），例如 probe-results 分支解開的內容。
+"""
+import gzip
 import json
 import os
 import pathlib
 
-RAW = pathlib.Path(os.environ.get('PROBE', '/tmp/claude-0/-home-claude/cee980f9-5e38-5530-b4df-135bdea4688a/scratchpad/probe_all')) / 'raw'
+HERE = pathlib.Path(__file__).resolve().parent
+RAW = pathlib.Path(os.environ['PROBE']) / 'raw' if os.environ.get('PROBE') else HERE / 'fixtures' / 'raw'
 
+# 網址裡有前面那段字，就回答後面那個檔名的內容（照順序比，先對到先用）
 ROUTES = [
     ('forreal/data/news.json', 'fr_news'), ('forreal/data/tech.json', 'fr_tech'),
     ('forreal/data/releases.json', 'fr_releases'), ('forreal/data/meta.json', 'fr_meta'),
@@ -14,7 +21,8 @@ ROUTES = [
     ('filter=topsellers&category1=998&cc=tw&l=english', 'steam_topsell_tw_en'), ('filter=topsellers', 'steam_topsell_tw'),
     ('GetMostPlayedGames', 'steam_mostplayed'), ('steamspy.com', 'steamspy_top2w'),
     ('api/appdetails', 'steam_appdetails'),
-    ('language=tchinese', 'steam_reviews_tc_recent'), ('appreviews/', 'steam_reviews_recent'),
+    # Steam 評論（新介面 IUserReviewsService/GetAppReviews；languages 是繁中的是繁中評論）
+    ('%22languages%22%3A%5B%22tchinese', 'steam_reviews_new_tc'), ('IUserReviewsService/GetAppReviews', 'steam_reviews_new_all'),
     ('GetNumberOfCurrentPlayers', 'steam_players_cs2'),
     ('query.wikidata.org/sparql', 'wikidata_sparql'),
     ('per-article/en.wikipedia', 'wiki_pv_article'), ('per-article/zh.wikipedia', 'wiki_pv_zh'),
@@ -24,10 +32,19 @@ ROUTES = [
 ]
 
 
+def raw_bytes(name):
+    for p in (RAW / f'{name}.txt.gz', RAW / f'{name}.txt'):
+        if p.exists():
+            b = p.read_bytes()
+            return gzip.decompress(b) if p.suffix == '.gz' else b
+    return None
+
+
 class R:
-    def __init__(self, b, code=200):
+    def __init__(self, b, code=200, url=''):
         self.content = b
         self.status_code = code
+        self.url = url
         self.text = b.decode('utf-8', errors='replace')
 
     def json(self):
@@ -46,10 +63,10 @@ class FakeHttp:
         self.log.append(url)
         for frag, name in self.routes:
             if frag in url:
-                p = RAW / f'{name}.txt'
-                if p.exists():
-                    return R(p.read_bytes())
-        return R(b'', 404)
+                b = raw_bytes(name)
+                if b is not None:
+                    return R(b, 200, url)
+        return R(b'', 404, url)
 
     def json(self, url, **kw):
         r = self.get(url, **kw)

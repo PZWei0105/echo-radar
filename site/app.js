@@ -1,8 +1,10 @@
 import { Scope, echoColor, BANDS } from './radar.js?v=__BUILD__';
 import { makeBrief, makePrompt } from './brief.js?v=__BUILD__';
+import { UPDATES } from './updates.js?v=__BUILD__';
 
 const LS = 'echo.v1';
 const LS_KEY = 'echo.key';
+const LS_SEEN = 'echo.seenUpdate';
 const BUILD = '__BUILD__';
 const PILLAR_ORDER = ['season', 'issue', 'ranking', 'hardware', 'spotlight'];
 const KEYS = ['demand', 'timing', 'fit', 'ease'];
@@ -181,6 +183,12 @@ function watchHit(t) {
   const hay = nk([t.title, g.zh, g.en, ...(g.aliases || [])].join(' '));
   return P.watch.find((w) => nk(w) && hay.includes(nk(w))) || null;
 }
+// 「為什麼是現在」的最後一句是時效：App 重算過時效（過了午夜、改了製作天數）就換成重算後的那句，才不會跟「今天開工」這類標籤對不上
+function whyNow(t, ttext) {
+  const why = t.why || '';
+  const t0 = ((t.reasons || {}).timing || [])[0];
+  return ttext && t0 && ttext !== t0 && why.endsWith(t0) ? why.slice(0, why.length - t0.length) + ttext : why;
+}
 function evaluate() {
   const meta = S.meta;
   const today = todayISO();
@@ -225,23 +233,24 @@ function evaluate() {
     const days = Math.max(0, raw);
     // 等級照畫面上顯示的整數分數判斷（跟後台一樣），不會出現「58 分卻是觀望」
     const disp = Math.round(total);
-    out.push({ ...t, _s: sc, _score: total, _disp: disp, _grade: grade(disp), _startBy: startBy, _ttext: ttext, _days: days, _raw: raw,
+    out.push({ ...t, _why: whyNow(t, ttext), _s: sc, _score: total, _disp: disp, _grade: grade(disp), _startBy: startBy, _ttext: ttext, _days: days, _raw: raw,
       _reasons: reasons, _watch: wh, _muted: !!P.mute[t.id], _plan: P.plan[t.id] || null });
   }
   out.sort((a, b) => b._score - a._score);
   S.list = out;
   S.byId = Object.fromEntries(out.map((t) => [t.id, t]));
-  // TOP 5（跟後台 pick_top 同一套規則）：已經在做或做過的、靜音的不算。
-  // 1. 可拍以上照分數挑，同一條路線、同一種題目最多 2 個；2. 不滿 5 個就讓被擋下的可拍以上題目進來（最多 3 個）；
-  // 3. 再不夠才用可拍以下的補（最多 2 個）。不會讓 53 分的題目卡掉 78 分的。
+  // TOP 5（跟後台 pick_top 同一套規則）：已經在做或做過的、靜音的不算。照分數分幾輪挑：
+  // 1. 必拍（70 以上）同一條路線、同一種題目最多 3 個；2. 可拍（58 以上）最多 2 個（含已選的）；
+  // 3. 不滿 5 個：可拍放寬到 3 個、再不限路線（寧可多一個同路線的高分題，也不拿觀望題湊多樣性）；
+  // 4. 可拍以上都用完了，才用分數較低的補。
   const pool = out.filter((t) => !(t._muted || (t.done && ['done', 'making'].includes(t.done.status)) || (t._plan && ['making', 'live'].includes(t._plan.status))));
   const top = [];
   const bp = {};
   const bt = {};
-  for (const [strong, cap] of [[true, 2], [true, 3], [false, 2]]) {
+  for (const [floor, cap] of [[70, 3], [58, 2], [58, 3], [58, 99], [0, 2], [0, 99]]) {
     for (const t of pool) {
       if (top.length >= 5) break;
-      if (top.includes(t) || (strong && t._disp < 58)) continue;
+      if (top.includes(t) || t._disp < floor) continue;
       if ((bp[t.pillar] || 0) >= cap || (bt[t.type] || 0) >= cap) continue;
       top.push(t);
       bp[t.pillar] = (bp[t.pillar] || 0) + 1;
@@ -321,7 +330,7 @@ function renderEcho() {
         <span class="tmain">
           <span class="tt">${esc(t.title)}</span>
           <span class="tmeta">${pillarChip(t)}${t.new ? '<span class="chip new">新上榜</span>' : ''}${t._watch ? '<span class="chip new">關注</span>' : ''}${dueText(t)}</span>
-          <span class="why">${esc(t.why)}</span>
+          <span class="why">${esc(t._why)}</span>
         </span>
         <span class="tscore"><b>${Math.round(t._score)}</b><i>${t._grade}</i>${meter(t)}</span>
       </button>
@@ -342,7 +351,7 @@ function renderList() {
   else if (S.filter === 'watch') xs = xs.filter((t) => t._watch);
   if (S.q) {
     const q = S.q.toLowerCase();
-    xs = xs.filter((t) => `${t.title} ${t.game ? `${t.game.zh || ''} ${t.game.en || ''}` : ''} ${t.why}`.toLowerCase().includes(q));
+    xs = xs.filter((t) => `${t.title} ${t.game ? `${t.game.zh || ''} ${t.game.en || ''}` : ''} ${t._why}`.toLowerCase().includes(q));
   }
   if (S.sort === 'due') xs = [...xs].sort((a, b) => a._days - b._days || b._score - a._score);
   if (S.sort === 'new') xs = [...xs].sort((a, b) => (b.first_seen || '').localeCompare(a.first_seen || ''));
@@ -504,8 +513,34 @@ function renderSet() {
     <div class="btn-row"><button type="button" class="btn" id="exp">複製設定</button><button type="button" class="btn" id="imp">貼上設定</button></div>
     <div class="btn-row"><button type="button" class="btn ghost" id="reset">權重恢復預設</button><a class="btn ghost" href="https://github.com/${esc(S.meta.repo)}/actions" target="_blank" rel="noopener">GitHub 執行紀錄</a></div>
   </div>
-  <p class="foot">回波 build ${esc(S.meta.build)}，資料 ${esc(S.radar.generated)}。</p>`;
+  <p class="foot">回波 build ${esc(S.meta.build)}，資料 ${esc(S.radar.generated)}。${UPDATES.length ? '<button type="button" class="linkbtn" data-updates>更新紀錄</button>' : ''}</p>`;
   renderPreview();
+}
+
+// ------------------------------------------------------------------ 更新紀錄（App 改版後第一次打開時跳出來一次）
+function updatesHtml(list) {
+  const entry = (u, i) => `${i ? `<h3 class="upd-h">${esc(u.title)}</h3>` : ''}<p class="upd-d">${esc(u.date.replace(/-/g, '/'))}</p>
+    <ul class="upd">${u.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  return `<div class="sh-top"><button type="button" class="ibtn" data-close aria-label="關閉">${ICON.close}</button><span class="sp"></span></div>
+  <h2 class="sh-title" id="sh-title">${esc(list[0].title)}</h2>
+  ${list.map(entry).join('')}
+  <button type="button" class="btn primary wide upd-ok" data-close>知道了</button>`;
+}
+function showUpdates(all = false) {
+  const last = UPDATES[0];
+  if (!last) return;
+  if (!all) {
+    let seen = '';
+    try { seen = localStorage.getItem(LS_SEEN) || ''; } catch (e) { /* 私密模式讀不到 */ }
+    if (seen === last.id) return;
+  }
+  try { localStorage.setItem(LS_SEEN, last.id); } catch (e) { /* 存不了，下次打開會再看到一次 */ }
+  openSheet(updatesHtml(all ? UPDATES : [last]));
+  if (!all) {
+    // 自己跳出來的時候把焦點放在標題（讀得到內容、按 Tab 就到「知道了」），關閉鈕不會一打開就框著黃框
+    const h = $('#sh-title');
+    if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+  }
 }
 function renderPreview() {
   const el = $('#preview');
@@ -588,7 +623,7 @@ function openTopic(id) {
   <h2 class="sh-title" id="sh-title">${esc(t.title)}</h2>
   <div class="sh-chips">${pillarChip(t)}<span class="chip">${esc(t.type_label)}</span>${t.new ? '<span class="chip new">新上榜</span>' : ''}${t.done ? `<span class="chip flag">${esc(STATUS[t.done.status] || '做過')}：${esc(t.done.title)}</span>` : ''}${t.covered ? `<span class="chip flag">${esc(t.covered.title)} 會提到</span>` : ''}${(t.flags || []).map((f) => `<span class="chip flag">${esc(f)}</span>`).join('')}</div>
   <div class="gauge" style="--c:${c}"><span class="gauge-n"><b>${Math.round(t._score)}</b></span>
-    <span class="gauge-t"><strong>${t._grade}</strong><span>${esc(t.why)}</span></span></div>
+    <span class="gauge-t"><strong>${t._grade}</strong><span>${esc(t._why)}</span></span></div>
 
   <div class="sec"><h3>四項分數</h3>
     <div class="scores">${KEYS.map((k) => `<button type="button" class="srow" data-reason="${k}" aria-expanded="false" style="--c:${k === 'demand' ? c : 'var(--e2)'}">
@@ -861,6 +896,7 @@ document.addEventListener('click', async (e) => {
   if (d.filter) { S.filter = d.filter; renderList(); return; }
   if ('urgent' in d) { S.filter = 'all'; S.sort = 'due'; go('list'); const so = $('#sort'); if (so) so.value = 'due'; return; }
   if ('close' in d) { closeSheet(); return; }
+  if ('updates' in d) { showUpdates(true); return; }
   if (d.back) { openTopic(d.back); return; }
   if (d.goKey !== undefined) { closeSheet(); go('set'); setTimeout(() => { const k = $('#keygroup'); if (k) k.scrollIntoView({ behavior: 'smooth' }); }, 60); return; }
   if (d.reason) {
@@ -1038,6 +1074,7 @@ async function boot() {
   }
   if (await Remote.boot()) { /* 用同步過來的方向 */ }
   renderAll();
+  showUpdates();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register(`sw.js?v=${BUILD}`).catch(() => {});
 }
 boot();

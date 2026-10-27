@@ -230,8 +230,10 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     t_ = time.time()
     cands = pick_candidates(reg, today)
     app_cands = [g.appid for g in cands if g.appid]
-    steam.details(http, app_cands[:220], details_cache, health, budget=45)
-    for g in cands:
+    mp_ids = [x['appid'] for x in mostplayed]
+    # 最多人玩的遊戲也要補商店資料：黑馬題要先確認它是遊戲、有正式名稱，才不會出現「App 123 突然爆紅」
+    steam.details(http, list(dict.fromkeys(app_cands[:220] + mp_ids)), details_cache, health, budget=45)
+    for g in reg.games.values():
         if g.appid and (details_cache.get(str(g.appid)) or {}).get('d'):
             d = details_cache[str(g.appid)]['d']
             g.details = d
@@ -241,7 +243,6 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     released = [g.appid for g in cands if g.appid and not ((g.details or {}).get('coming'))]
     steam.reviews(http, released[:160], reviews_cache, health, budget=40)
     players_hist = st.load('hist/players.json.gz', {})
-    mp_ids = [x['appid'] for x in mostplayed]
     pl_ids = list(dict.fromkeys(mp_ids + released[:120]))
     no_players = st.load('cache/noplayers.json', {})
     steam.players(http, pl_ids, players_hist, health, budget=200, skip=no_players)
@@ -434,10 +435,11 @@ def prune(cache: dict, max_age_h: float, t0):
 
 
 def pick_top(tlist, n=5):
-    """本週 TOP 5（App 端的 evaluate 用同一套規則）：
-    1. 可拍以上（顯示 58 分以上）的題目照分數挑，同一條路線、同一種題目最多 2 個，避免整排都是同一類；
-    2. 還不滿 5 個，就讓被擋下來的可拍以上題目進來（同一條路線最多 3 個），不會讓 53 分的題目卡掉 78 分的；
-    3. 再不夠才用可拍以下的題目補（一樣最多 2 個）。
+    """本週 TOP 5（App 端的 evaluate 用同一套規則），照分數分幾輪挑：
+    1. 必拍（顯示 70 分以上），同一條路線、同一種題目最多 3 個；
+    2. 可拍（58 分以上），同一條路線、同一種題目最多 2 個（含前面已選的），讓不同路線都有機會；
+    3. 還不滿 5 個：可拍題放寬到 3 個，再不夠就不限路線——寧可多放一個同路線的高分題，也不拿觀望題湊多樣性；
+    4. 可拍以上的都用完了，才用分數較低的題目補（一樣先最多 2 個）。
     頻道已經在做的題目不放進 TOP（還是會出現在題庫裡）。"""
     pool = sorted((t for t in tlist if (t.get('done') or {}).get('status') not in ('done', 'making')),
                   key=lambda t: -t['score'])
@@ -451,11 +453,11 @@ def pick_top(tlist, n=5):
         by_p[t['pillar']] = by_p.get(t['pillar'], 0) + 1
         by_t[t['type']] = by_t.get(t['type'], 0) + 1
 
-    for strong, cap in ((True, 2), (True, 3), (False, 2)):
+    for floor, cap in ((70, 3), (58, 2), (58, 3), (58, 99), (0, 2), (0, 99)):
         for t in pool:
             if len(out) >= n:
                 break
-            if t in out or (strong and topics.shown(t['score']) < 58):
+            if t in out or topics.shown(t['score']) < floor:
                 continue
             if ok(t, cap):
                 take(t)

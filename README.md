@@ -25,4 +25,4 @@
 
 ## 不需要金鑰、不花錢
 
-全部用公開資料：Steam 商店與統計端點、Wikimedia 統計 API、Wikidata、Google 新聞與趨勢 RSS、Reddit RSS、PTT 網頁版鏡像站（PTT 官網會擋 GitHub 的伺服器；連結一律指回 PTT 原文）、《玩真的》的公開資料。YouTube 擁擠度需要 API 金鑰，目前先不做。
+全部用公開資料：Steam 商店、統計與評論的公開端點、Wikimedia 統計 API、Wikidata、Google 新聞與趨勢 RSS、Reddit RSS、PTT 網頁版鏡像站（PTT 官網會擋 GitHub 的伺服器；連結一律指回 PTT 原文）、《玩真的》的公開資料。YouTube 擁擠度需要 API 金鑰，目前先不做。

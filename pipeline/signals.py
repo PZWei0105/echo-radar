@@ -388,7 +388,7 @@ def station_cards(g, summ: dict) -> list[dict]:
     if pt and pt.get('n72'):
         top = max(pt['posts'], key=lambda x: x.get('push', 0))
         push = '爆' if top['push'] >= 100 else f"{top['push']} 推"
-        add('ptt', f"3 天 {pt['n72']} 篇，最熱：{top['t'][:30]}（{push}）", top.get('u'))
+        add('ptt', f"PTT 3 天 {pt['n72']} 篇討論，最熱：{top['t'][:30]}（{push}）", top.get('u'))
     gn = s.get('gnews')
     if gn and gn.get('n'):
         add('gnews', f"台灣 3 天 {gn['n']} 篇報導：{gn['items'][0]['t'][:30]}", gn['items'][0].get('u'))
