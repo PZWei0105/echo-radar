@@ -1,1 +1,1 @@
-{"job": "build", "note": "推到 main 時要執行的工作：build（抓資料＋發布）/ deploy（只發布介面）/ probe（實測候選來源）"}
+{"job": "probe", "note": "推到 main 時要執行的工作：build（抓資料＋發布）/ deploy（只發布介面）/ probe（實測候選來源）"}
