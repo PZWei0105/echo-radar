@@ -1,0 +1,67 @@
+{
+ "started": "2026-10-27T22:43:53.035699+00:00",
+ "python": "3.12.15",
+ "results": [
+  {
+   "name": "new_ij_all",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "size": 96651,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.28
+  },
+  {
+   "name": "new_ij_tc",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A553850%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "size": 71779,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.2
+  },
+  {
+   "name": "new_ij_disp_tc",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A1867240%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%2C%22display_language%22%3A%22tchinese%22%7D",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A1867240%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%2C%22display_language%22%3A%22tchinese%22%7D",
+   "size": 100387,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.19
+  },
+  {
+   "name": "new_brackets",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?appid=553850&filter=1&languages%5B0%5D=all&review_type=0&purchase_type=1&num_per_page=100",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?appid=553850&filter=1&languages%5B0%5D=all&review_type=0&purchase_type=1&num_per_page=100",
+   "size": 96651,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.28
+  },
+  {
+   "name": "new_ij_small_game",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4019220%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4019220%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22all%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "size": 72160,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.13
+  },
+  {
+   "name": "new_ij_no_reviews",
+   "url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4435490%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "status": 200,
+   "final_url": "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/?input_json=%7B%22appid%22%3A4435490%2C%22filter%22%3A1%2C%22languages%22%3A%5B%22tchinese%22%5D%2C%22review_type%22%3A0%2C%22purchase_type%22%3A1%2C%22num_per_page%22%3A100%7D",
+   "size": 74203,
+   "content_type": "application/json; charset=UTF-8",
+   "retry_after": null,
+   "elapsed": 0.32
+  }
+ ],
+ "finished": "2026-10-27T22:44:01.626662+00:00"
+}
