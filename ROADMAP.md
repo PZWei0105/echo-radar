@@ -6,6 +6,7 @@
 - Steam 黑色星期五：Valve 只說 11 月會有黑五特價、還沒公布日期。公布後把 `config/calendar.json` 的 `blackfriday-2026` 改成官方日期並附上來源（現在用 11/27～11/30，標著「以官方公告為準」）。
 - The Game Awards 2026：12/10（洛杉磯）已確定，台灣幾點播出等官方公布後補進 `calendar.json` 的 note。
 - 2027 下半年的 Steam 檔期：Valve 公布後補進 `calendar.json`（目前排到 2027 夏季特賣）。
+- GitHub 提醒 `checkout@v4`、`setup-python@v5`、`upload-artifact@v4`、`deploy-pages@v4` 是舊的 Node 20 版本，現在被強制改用 Node 24 跑、一切正常。之後要升級這些 actions 的新版本時，先推一次確認整輪 build＋deploy 成功（自動更新是最重要的，不能壞）。
 
 ## 已知問題
 - 離線測試錄好的回應每個網址只有一份，所以測試裡每款遊戲的在線人數、維基瀏覽量都一樣；測得出流程與格式，測不出「某款遊戲的數字算錯」。真實數字要看線上那輪的結果。
