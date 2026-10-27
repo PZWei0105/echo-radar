@@ -169,6 +169,22 @@ def is_software(g) -> bool:
     return soft and not (ids & _GAME_GENRE_IDS or names & _GAME_GENRES)
 
 
+def _plain_name(s: str) -> str:
+    return re.sub(r'\s+', ' ', re.sub(r'[®™©]', '', s or '')).strip()
+
+
+def same_series(names, launched) -> bool:
+    """names（老遊戲的中英文名）是不是剛上市新作名稱的開頭：《決勝時刻》之於《決勝時刻：現代戰爭 4》、
+    Call of Duty 之於 Call of Duty: Modern Warfare 4。英文要整個字對上（Rust 不算 Rusty Lake 的系列）。"""
+    for n in (_plain_name(x) for x in names if x):
+        if len(n) < 2 or (n.isascii() and len(n) < 4):
+            continue
+        pat = re.compile(re.escape(n) + r'(?![A-Za-z0-9])', re.I)
+        if any(pat.match(_plain_name(x)) for x in launched if x):
+            return True
+    return False
+
+
 def is_live_f2p(g) -> bool:
     """免費遊玩＋內購（多半是抽卡或長期營運型），頻道不做這類宣傳。"""
     det = (g.details or {}) if g else {}
@@ -778,6 +794,10 @@ class Builder:
 
     def sleeper(self):
         w = self.cfg['weights']
+        # 已經上市的新作（新作首發題）：同系列老遊戲這時候在線暴增，多半是新作帶起來的
+        # （《現代戰爭 4》要從《決勝時刻》主程式進去玩），那是新作的熱度，不算老遊戲又紅
+        launched = [x for t in self.topics.values() if t.get('type') == 'launch' and t.get('phase') != 'pre'
+                    for x in ((t.get('game') or {}).get('zh'), (t.get('game') or {}).get('en'))]
         for g in self.reg.games.values():
             summ = self.summ.get(g.gid)
             if not summ or not g.appid:
@@ -817,6 +837,8 @@ class Builder:
             if not reasons:
                 continue
             if g.appid in self._EVERGREEN and not (g7 and g7 >= 0.5):
+                continue
+            if same_series((g.zh, g.en), launched):
                 continue
             tid = f'sleeper:{g.gid}'
             fs = self.first_seen(tid)

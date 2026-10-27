@@ -219,6 +219,11 @@ def test_software():
     check(topics.is_software(G(['休閒'], ['4', '57'])), '看分類代號（舊名稱對不上也認得）')
     check(not topics.is_software(G(['角色扮演', '教育'])), '有遊戲分類的教育遊戲照樣是遊戲')
     check(not topics.is_software(G(['動作', '冒險'], ['1', '25'])), '一般遊戲不是軟體')
+    section('同系列新作帶起來的在線暴增不算老遊戲又紅')
+    mw4 = ['決勝時刻®：現代戰爭® 4', 'Call of Duty®: Modern Warfare® 4']
+    check(topics.same_series(('決勝時刻', 'Call of Duty®'), mw4), '《決勝時刻》主程式是《現代戰爭 4》的系列')
+    check(not topics.same_series(('電馭叛客2077', 'Cyberpunk 2077'), mw4), '別的遊戲不算')
+    check(not topics.same_series((None, 'Rust'), ['Rusty Lake: Roots']), '英文要整個字對上')
 
 
 def test_top5():
