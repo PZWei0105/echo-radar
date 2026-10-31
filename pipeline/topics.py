@@ -145,6 +145,17 @@ def _decay_timing(first_seen, half_life_d: float, rising: bool, t0):
     return clamp(base), txt
 
 
+def _decay_anchor(first_seen, rising: bool, today):
+    """話題型題目（爆紅、負評潮、新聞）的保鮮期從哪天起算。
+    平常從第一次出現那天算；還在升溫的話最早只算到昨天，不會出現「還在升溫中」卻「補拍期已過」。"""
+    d = parse_iso(first_seen).astimezone(TW).date() if parse_iso(first_seen) else today
+    if rising:
+        d = max(d, today - dt.timedelta(days=1))
+    return d
+
+
+REAPPEAR_H = 72  # 題目消失超過這麼多小時又出現，就當成新的一波
+
 _F2P_CATS = re.compile(r'應用程式內購買|In-App Purchases', re.I)
 _GACHA_HINT = re.compile(r'gacha|抽卡|轉蛋|卡池|角色池|二次元', re.I)
 
@@ -681,8 +692,11 @@ class Builder:
 
     def first_seen(self, tid, fallback=None):
         rec = self.seen.get(tid)
-        if rec:
+        # 消失超過 3 天又回來的題目是新的一波（例如同一款遊戲第二次負評潮），從這一輪重新算
+        if rec and hours_since(rec.get('last'), self.t0) <= REAPPEAR_H:
             return rec['first']
+        if rec:
+            return self.t0.strftime('%Y-%m-%dT%H:%M:%SZ')
         return fallback or self.t0.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     def add(self, t: dict):
@@ -843,6 +857,7 @@ class Builder:
             tid = f'sleeper:{g.gid}'
             fs = self.first_seen(tid)
             timing, ttext = _decay_timing(fs, 6, bool(summ['rising']), self.t0)
+            fsd = _decay_anchor(fs, bool(summ['rising']), self.today)
             fit, fit_why = _fit(self.cfg, 'spotlight', g, tw_level=summ['tw'])
             det = g.details or {}
             m = g.sig.get('media') or {}
@@ -853,7 +868,6 @@ class Builder:
             dwhy = reasons + dwhy
             # 上市半年以上的老遊戲是「又紅起來」，不是「突然爆紅」
             title = f'《{g.name}》又紅起來了：{reasons[0]}' if old else f'《{g.name}》突然爆紅：{reasons[0]}'
-            fsd = parse_iso(fs).astimezone(TW).date()
             t = {'id': tid, 'type': 'sleeper', 'pillar': 'spotlight', 'title': title, 'game': _game_brief(g),
                  'phase': 'old' if old else 'new',
                  'facts': _game_facts(g) + _stories_facts(m.get('stories', []), 3),
@@ -1056,7 +1070,7 @@ class Builder:
         title = zh_title
         if len(title) > 34:
             title = title[:33] + '…'
-        fsd = parse_iso(fs).astimezone(TW).date() if parse_iso(fs) else self.today
+        fsd = _decay_anchor(fs, n_rise >= 2, self.today)
         pub = fsd + dt.timedelta(days=3 if kind != 'showcase' else 2)
         t = {'id': tid, 'type': kind, 'pillar': pillar, 'title': title, 'issue': all_cats, 'issue_label': label,
              'product': product if kind == 'hardware' else None,
@@ -1097,7 +1111,7 @@ class Builder:
             cards = S.station_cards(g, summ)
             demand, dwhy, glob, tw = self._demand_from_summary(summ)
             hook = f"最近 {r['n']} 篇只剩 {r['pct']}% 好評（整體 {a['pct']}%）"
-            fsd = parse_iso(fs).astimezone(TW).date()
+            fsd = _decay_anchor(fs, rising, self.today)
             m = g.sig.get('media') or {}
             t = {'id': tid, 'type': 'issue', 'pillar': 'issue', 'title': f'《{g.name}》評價崩盤：{hook}',
                  'issue': ['backlash'], 'issue_label': '玩家反彈', 'game': _game_brief(g),

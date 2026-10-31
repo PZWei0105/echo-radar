@@ -268,7 +268,7 @@ function dueText(t) {
   if (!t._startBy) return '<span class="due">不急</span>';
   const d = daysBetween(today, t._startBy);
   const pub = t.window && t.window.publish_by;
-  if (pub && today > pub) return `<span class="due">補拍到 ${md(t.window.close)}</span>`;
+  if (pub && today > pub) return t.window.close && today > t.window.close ? '<span class="due">保鮮期已過</span>' : `<span class="due">補拍到 ${md(t.window.close)}</span>`;
   if (d <= 0) return `<span class="due hot">${pub && daysBetween(today, pub) <= 0 ? '今天要上架' : '今天開工'}</span>`;
   if (d <= 3) return `<span class="due warm">最晚 ${md(t._startBy)} 開工</span>`;
   return `<span class="due">${md(t._startBy)} 前開工</span>`;

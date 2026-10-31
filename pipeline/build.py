@@ -366,7 +366,8 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
     tlist.sort(key=lambda t: -t['score'])
     tlist = tlist[:120]
     for t in tlist:
-        rec = seen.get(t['id']) or {'first': t['first_seen']}
+        rec = seen.get(t['id']) or {}
+        rec['first'] = t['first_seen']  # 消失超過 3 天又回來的題目，first_seen 會是這一輪（topics.REAPPEAR_H）
         rec['last'] = iso(t0)
         rec['best'] = max(rec.get('best', 0), t['score'])
         if t.get('story_ids'):

@@ -250,6 +250,22 @@ def test_top5():
     check(topics.shown(raw) == 69 and build.pick_top(tl4) == ['a', 'b', 'd', 'e', 'f'], f'門檻照畫面上的整數分數（{raw:.3f}：{build.pick_top(tl4)}）')
 
 
+def test_decay_window():
+    section('話題的保鮮期')
+    today = dt.date(2026, 10, 31)
+    old = '2026-10-20T09:26:20Z'
+    check(topics._decay_anchor(old, False, today) == dt.date(2026, 10, 20), '沒在升溫：從第一次出現那天算')
+    check(topics._decay_anchor(old, True, today) == dt.date(2026, 10, 30), '還在升溫：最早只算到昨天，最晚上架日不會已經過了')
+    check(topics._decay_anchor('2026-10-31T02:00:00Z', True, today) == today, '剛冒出來的照樣從今天算')
+    t0 = dt.datetime(2026, 10, 31, 10, 0, tzinfo=dt.timezone.utc)
+    b = topics.Builder.__new__(topics.Builder)
+    b.t0 = t0
+    b.seen = {'a': {'first': old, 'last': '2026-10-31T09:00:00Z'}, 'b': {'first': old, 'last': '2026-10-26T09:00:00Z'}}
+    check(b.first_seen('a') == old, '一直都在的題目沿用第一次出現的時間')
+    check(b.first_seen('b') == '2026-10-31T10:00:00Z', '消失超過 3 天又回來的題目從這一輪重新算')
+    check(b.first_seen('c', '2026-10-30T01:00:00Z') == '2026-10-30T01:00:00Z', '沒記錄的新聞題用最早那則報導的時間')
+
+
 def deadline_cases(path: pathlib.Path):
     random.seed(7)
     base = dt.date(2026, 10, 1)
@@ -288,6 +304,7 @@ def main():
         test_why()
         test_software()
         test_top5()
+        test_decay_window()
         section('App 與後台規則一致（node）')
         deadline_cases(tmp / 'deadline_cases.json')
         run_node('app_check.mjs', tmp / 'deadline_cases.json')
