@@ -331,3 +331,32 @@ def player_stats(series: list) -> dict | None:
     return {'now': n_now, 'd1': d1, 'd7': d7, 'peak14': peak, 'points': len(s),
             'g1': round(n_now / d1 - 1, 3) if d1 else None,
             'g7': round(n_now / d7 - 1, 3) if d7 else None}
+
+
+def market_lift(stats: list) -> dict:
+    """整個 Steam 一起漲多少：所有有記錄的遊戲（現在與當時都 1,000 人以上）在線人數變化的中位數。
+    週六對週五、特賣開跑這類時候，幾乎每款遊戲都一起漲三四成，那不是哪一款「突然紅了」。
+    只扣掉一起漲的部分（中位數低於 0 不補），至少要 30 款遊戲才算。"""
+    out = {}
+    for k, base in (('m1', 'd1'), ('m7', 'd7')):
+        rs = sorted(p['now'] / p[base] for p in stats
+                    if p and p.get(base) and p[base] >= 1000 and (p.get('now') or 0) >= 1000)
+        if len(rs) >= 30:
+            mid = len(rs) // 2
+            med = rs[mid] if len(rs) % 2 else (rs[mid - 1] + rs[mid]) / 2
+            out[k] = round(max(1.0, med) - 1, 3)
+    return out
+
+
+def apply_market(p: dict | None, lift: dict) -> None:
+    """在線人數統計加上「扣掉整個 Steam 一起漲之後」的變化 r1、r7（規則用這個判斷），
+    以及同時段整個 Steam 的漲幅 m1、m7（說明用）。"""
+    if not p:
+        return
+    for g, m, r in (('g1', 'm1', 'r1'), ('g7', 'm7', 'r7')):
+        if p.get(g) is None:
+            p[r] = None
+            continue
+        lift_k = lift.get(m) or 0
+        p[m] = lift_k
+        p[r] = round((1 + p[g]) / (1 + lift_k) - 1, 3)

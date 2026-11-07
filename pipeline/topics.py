@@ -822,6 +822,9 @@ class Builder:
                 continue  # 剛上市的交給「新作首發」
             reasons = []
             g7, g1 = p.get('g7'), p.get('g1')
+            # 判斷用扣掉整個 Steam 一起漲之後的變化（週六對週五幾乎每款都 +30% 以上，那不是這款變紅）
+            r7 = p['r7'] if 'r7' in p else g7
+            r1 = p['r1'] if 'r1' in p else g1
             age = (self.today - rd).days if rd else None
             recent_release = bool(age is not None and age <= 90)
             # 「熱門新品」榜上剛發售一個月內的才算黑馬；上市一個多月還在榜上，多半是特價或大作本來就賣得好
@@ -832,12 +835,14 @@ class Builder:
                 yr = int(g.release[:4]) if (g.release or '')[:4].isdigit() else None
                 old = bool(yr and yr < self.today.year - 1)
             under_covered = summ['levels'].get('media', 0) < 30
-            if p.get('now', 0) >= 3000 and g7 is not None and g7 >= 0.5 and p.get('points', 0) >= 24 * 5:
+            if p.get('now', 0) >= 3000 and r7 is not None and r7 >= 0.5 and p.get('points', 0) >= 24 * 5:
                 reasons.append(f"同時在線一週 {S.pct(g7)}")
-            elif p.get('now', 0) >= 5000 and g1 is not None and g1 >= 0.6 and p.get('points', 0) >= 20:
+            elif p.get('now', 0) >= 5000 and r1 is not None and r1 >= 0.6 and p.get('points', 0) >= 20:
                 reasons.append(f"同時在線一天 {S.pct(g1)}")
             tr = g.ranks.get('trending')
-            if tr and tr <= 10 and under_covered and fresh:
+            # 已經是全球熱銷前 10 的大作（《現代戰爭 4》）上熱門新品榜是理所當然，不算黑馬
+            big_hit = (g.ranks.get('topsell') or 999) <= 10
+            if tr and tr <= 10 and under_covered and fresh and not big_hit:
                 reasons.append(f'Steam 熱門新品第 {tr}，但媒體還很少報')
             ts = g.ranks.get('topsell_tw')
             if ts and ts <= 12 and (g.ranks.get('topsell') or 999) > 60 and recent_release:
@@ -850,7 +855,7 @@ class Builder:
                 continue
             if not reasons:
                 continue
-            if g.appid in self._EVERGREEN and not (g7 and g7 >= 0.5):
+            if g.appid in self._EVERGREEN and not (r7 and r7 >= 0.5):
                 continue
             if same_series((g.zh, g.en), launched):
                 continue

@@ -257,6 +257,11 @@ def execute(http, st: State, t0, data_dir: pathlib.Path, build_id: str, user=Non
             # 評論快取超過一天沒更新就不用（正常 5.5 小時更新一次）
             if rv and hours_since(rv.get('at'), t0) <= 24:
                 g.reviews = rv
+    # 週末、特賣時整個 Steam 一起漲：扣掉這部分才判斷哪款遊戲真的變熱
+    lift = steam.market_lift([g.players for g in reg.games.values() if g.players])
+    for g in reg.games.values():
+        steam.apply_market(g.players, lift)
+    health.setdefault('steam_players', {})['market'] = lift
     tick('steam_enrich', t_)
 
     # 6) 維基

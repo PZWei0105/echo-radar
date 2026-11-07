@@ -226,6 +226,28 @@ def test_software():
     check(not topics.same_series((None, 'Rust'), ['Rusty Lake: Roots']), '英文要整個字對上')
 
 
+
+def test_market():
+    section('週末、特賣時整個 Steam 一起漲：扣掉才判斷')
+    from pipeline import signals
+    # 週六對週五：40 款遊戲都 +40%，只有一款 +150%
+    stats = [{'now': 14000, 'd1': 10000, 'd7': 10000, 'g1': 0.4, 'g7': 0.4} for _ in range(40)]
+    hot = {'now': 25000, 'd1': 10000, 'd7': 10000, 'g1': 1.5, 'g7': 1.5}
+    stats.append(hot)
+    lift = steam.market_lift(stats)
+    check(abs(lift.get('m1', 0) - 0.4) < 1e-9, f"整個 Steam 一天 +40%（得到 {lift}）")
+    for p in stats:
+        steam.apply_market(p, lift)
+    check(abs(stats[0]['r1']) < 1e-9, '跟著大家一起漲的不算變熱')
+    check(abs(hot['r1'] - (2.5 / 1.4 - 1)) < 1e-3, '真的暴增的扣掉之後還是 +79%')
+    check(not signals._rel(stats[0], 1), '「升溫」看扣掉後的變化')
+    check('Steam 整體 +40%' in signals._market_note(stats[0], 1), '說明裡附上整個 Steam 的漲幅')
+    # 平日大家小跌：不補（不會因為大盤跌就把持平的遊戲當成變熱）
+    calm = [{'now': 9000, 'd1': 10000, 'g1': -0.1} for _ in range(40)]
+    check(steam.market_lift(calm).get('m1') == 0, '整體下跌時不補')
+    check(steam.market_lift(stats[:10]) == {}, '不到 30 款不算')
+
+
 def test_top5():
     section('TOP 5 規則')
 
@@ -303,6 +325,7 @@ def main():
         test_rules()
         test_why()
         test_software()
+        test_market()
         test_top5()
         test_decay_window()
         section('App 與後台規則一致（node）')

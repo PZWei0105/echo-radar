@@ -25,6 +25,18 @@ TW_W = {'ptt': 0.75, 'gnews': 0.6, 'trends': 0.85, 'wiki_zh': 0.5, 'steam_tw': 0
 EXCLUDE_NEWS_SRC = re.compile(r'GNN|巴哈|gamer\.com\.tw|Microsoft|PlayStation Store|Nintendo eShop', re.I)
 
 
+
+def _rel(p: dict, days: int):
+    """扣掉整個 Steam 一起漲之後的在線變化；舊資料沒有就用原本的。"""
+    k = f'r{days}'
+    return p.get(k) if k in p else p.get(f'g{days}')
+
+
+def _market_note(p: dict, days: int) -> str:
+    """整個 Steam 同時段也漲一成以上時，說明裡附上，免得把週末效應看成這款遊戲變熱。"""
+    m = p.get(f'm{days}') or 0
+    return f"，Steam 整體 {pct(m)}" if m >= 0.1 else ''
+
 def soft_or(levels: dict, weights: dict) -> float:
     p = 1.0
     for k, w in weights.items():
@@ -281,7 +293,8 @@ def rising_flags(g, hist_ranks: dict, t0) -> dict:
                 old = [r for ts, r in series if t0.timestamp() - ts >= 60 * 3600]
                 if old and old[-1] - cur >= 10:
                     rk_up = True
-    out['steam'] = bool((p.get('g1') or 0) >= 0.25 or (p.get('g7') or 0) >= 0.4 or rk_up)
+    # 用扣掉整個 Steam 一起漲之後的變化（r1、r7）：週六對週五幾乎每款都 +30% 以上
+    out['steam'] = bool((_rel(p, 1) or 0) >= 0.25 or (_rel(p, 7) or 0) >= 0.4 or rk_up)
     for k in ('wiki_en', 'wiki_zh'):
         st = s.get(k) or {}
         out[k] = bool((st.get('g7') or 0) >= 0.3 or (st.get('spike') or 0) >= 2.0)
@@ -363,9 +376,9 @@ def station_cards(g, summ: dict) -> list[dict]:
     if p.get('now'):
         t = f"同時在線 {unit(p['now'], '人')}"
         if p.get('g1') is not None and abs(p['g1']) >= 0.05:
-            t += f"（24 小時 {pct(p['g1'])}）"
+            t += f"（24 小時 {pct(p['g1'])}{_market_note(p, 1)}）"
         elif p.get('g7') is not None and abs(p['g7']) >= 0.05:
-            t += f"（7 天 {pct(p['g7'])}）"
+            t += f"（7 天 {pct(p['g7'])}{_market_note(p, 7)}）"
         bits.append(t)
     for lst, lab in (('topsell', '全球熱銷'), ('mostplayed', '最多人玩'), ('wishlist', '願望單'),
                      ('upcoming', '熱門即將推出'), ('trending', '熱門新品')):
