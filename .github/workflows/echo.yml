@@ -2,7 +2,8 @@ name: echo
 
 on:
   schedule:
-    # 每小時更新一次（UTC 時間第 47 分；玩真的在第 23 分更新，晚一點跑才能拿到它最新的新聞）
+    # 備援：平常由每一輪結束後的「接力」（下面的 next）排好下一輪；GitHub 的排程 2026/11 起常常 4～8 小時才來一次，
+    # 接力斷掉時靠這個重新接上（UTC 時間第 47 分；玩真的在第 23 分備援更新）
     - cron: '47 * * * *'
   push:
     branches: [main]
@@ -18,19 +19,29 @@ permissions:
   id-token: write
   actions: write
 
-concurrency:
-  group: echo-data
-  cancel-in-progress: false
-
 jobs:
   # 抓資料、評分、產生企劃包，把網站打包好（不碰 Pages 環境，Pages 有狀況時資料照樣更新）
   run:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    # 同一時間只跑一輪（state 分支只能一個人寫）。放在這個工作上、不放整個 workflow：
+    # 接力的 next 會等將近一小時，不能擋住推送或下一輪。
+    concurrency:
+      group: echo-data
+      cancel-in-progress: false
     outputs:
       deploy: ${{ steps.pipe.outputs.deploy }}
+      t0: ${{ steps.t0.outputs.t0 }}
+      mode: ${{ steps.mode.outputs.mode }}
     steps:
+      - id: t0
+        run: echo "t0=$(date +%s)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
+      - id: mode
+        run: python3 -m pipeline.dispatch --print-mode
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -63,9 +74,51 @@ jobs:
     if: needs.run.outputs.deploy == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    concurrency:
+      group: echo-pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
+
+  # 接力：GitHub 的每小時排程 2026/11 起常常 4～8 小時才來一次（11/6～11/14 平均一天只跑 3～4 輪），
+  # 所以每一輪自己排好下一輪：上一次「抓資料」（build）開始後約 58 分鐘發出下一輪。
+  # 已經有比自己新的一輪（排程、推送或別的接力）就交給它，不重複發；probe、deploy 這種不抓資料的推送也會接上，
+  # 但時間照上一次 build 算（state 分支 runs.json 最後一筆）。做法和《玩真的》的接力一樣。
+  # GitHub 偶爾回 502：隔 20 秒再試，最多 4 次，每次重試前再確認一次。
+  next:
+    needs: run
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - run: |
+          t0="${T0:-$(date +%s)}"
+          if [ "${MODE}" != "build" ]; then
+            last=$(gh api "repos/${REPO}/contents/runs.json?ref=state" --jq '.content' 2>/dev/null | base64 -d 2>/dev/null \
+              | python3 -c "import json,sys,datetime as d; r=json.load(sys.stdin); print(int(d.datetime.fromisoformat(r[-1]['at'].replace('Z','+00:00')).timestamp()))" 2>/dev/null || true)
+            if [ -n "${last}" ] && [ "${last}" -lt "${t0}" ]; then echo "這一輪是 ${MODE}，時間照上一次 build 算"; t0="${last}"; fi
+          fi
+          wait=$(( t0 + 3480 - $(date +%s) ))
+          if [ "$wait" -gt 0 ]; then echo "等 ${wait} 秒再發出下一輪"; sleep "$wait"; fi
+          newer() {
+            gh api "repos/${REPO}/actions/workflows/echo.yml/runs?per_page=20" \
+              --jq "[.workflow_runs[] | select(.id > ${GITHUB_RUN_ID}) | select(.conclusion != \"cancelled\")] | length" 2>/dev/null || echo 0
+          }
+          for try in 1 2 3 4; do
+            n=$(newer)
+            if [ "${n:-0}" -gt 0 ]; then echo "已經有比較新的一輪（${n} 個），交給它接力"; exit 0; fi
+            if gh api -X POST "repos/${REPO}/actions/workflows/echo.yml/dispatches" -f ref=main -f "inputs[mode]=build"; then
+              echo "已發出下一輪"; exit 0
+            fi
+            echo "發出失敗（第 ${try} 次），20 秒後再試"; sleep 20
+          done
+          exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          T0: ${{ needs.run.outputs.t0 }}
+          MODE: ${{ needs.run.outputs.mode }}

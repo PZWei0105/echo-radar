@@ -320,7 +320,8 @@ function renderEcho() {
     const a = urgent.length ? `<b>今天要開工 ${urgent.length} 題</b>` : '';
     const b = late.length ? `${urgent.length ? '，另外 ' : ''}<b>${late.length} 題時間很趕</b>` : '';
     const names = [...urgent, ...late].slice(0, 2).map(short).join('、');
-    al.innerHTML = `<span aria-hidden="true">⚠</span><span>${a}${b}。${names} 等。<button type="button" class="linkbtn" data-urgent>看是哪些</button></span>`;
+    const more = urgent.length + late.length > 2 ? '等' : '';
+    al.innerHTML = `<span aria-hidden="true">⚠</span><span>${a}${b}：${names}${more}。<button type="button" class="linkbtn" data-urgent>看是哪些</button></span>`;
   } else al.hidden = true;
 
   $('#top').innerHTML = S.top.map((t, i) => `
@@ -739,7 +740,7 @@ async function onScan() {
     openSheet(`
       <div class="sh-top"><button type="button" class="ibtn" data-close aria-label="關閉">${ICON.close}</button><span class="sp"></span></div>
       <h2 class="sh-title" id="sh-title">已經是最新的觀測</h2>
-      <p class="lede">最新資料是 ${hm(S.radar.generated)} 掃描的。雷達每小時自動掃描一次（大約每小時的 47 分），不用做任何事。</p>
+      <p class="lede">最新資料是 ${hm(S.radar.generated)} 掃描的。雷達每小時自動掃描一次（上一輪開始後約 1 小時），不用做任何事。</p>
       <p class="lede">想現在就重新掃描，有兩個方法：</p>
       <ol class="steps"><li>設定「遙控鑰匙」：一次設定，之後按「掃描」就會直接叫 GitHub 重抓，約 3 分鐘後自動更新。</li>
       <li>在 GitHub 手動執行：打開執行頁，按「Run workflow」再按綠色的「Run workflow」。</li></ol>

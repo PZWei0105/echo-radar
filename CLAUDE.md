@@ -11,7 +11,7 @@
 - 鑰匙（GitHub token）只存在使用者裝置的 localStorage，絕不寫進 repo 或資料檔。
 
 ## 怎麼運作
-- `.github/workflows/echo.yml` 每小時第 47 分跑 `pipeline/build.py`（玩真的在第 23 分更新，晚一點才拿得到它的新聞）。
+- `.github/workflows/echo.yml` 每小時跑 `pipeline/build.py`。每小時一輪靠「接力」（2026-11-14 起，和玩真的同一套）：GitHub 的排程 2026/11 起常常 4～8 小時才來一次，所以每一輪結束後由 `next` 工作等到這一輪開始後約 58 分鐘，自己用 workflow_dispatch 發出下一輪；已經有比自己新的一輪就不發。concurrency 只放在 `run` 工作（state 只能一個人寫），`next` 在等的時候不會擋住推送。每小時第 47 分的排程留著當備援。
 - 測站：`forreal.py`（玩真的新聞）、`steam.py`（排行、在線、評論、商店資料；評論用官方 Web API `IUserReviewsService/GetAppReviews`，舊的 `store.steampowered.com/appreviews` 在 2026-10-22 停用了）、`wiki.py`（Wikidata 對應＋瀏覽量）、`ptt.py`（pttweb.cc 鏡像站，PTT 官網擋 GitHub）、`social.py`（Google 趨勢、Google 新聞台灣版、Reddit RSS）。
 - `entities.py` 建遊戲名冊並從標題認遊戲；`signals.py` 算每個測站的回波強度；`topics.py` 產生題目與四項分數；`angles.py` 產生角度三選一。
 - 設定檔：`config/channel.json`（路線、權重、製作天數）、`config/videos.json`（頻道做過的影片）、`config/calendar.json`（Steam 官方檔期與大型活動）、`config/keywords.json`（爭議／硬體／發表會關鍵字）、`config/aliases.json`（簡稱與 PTT 叫法）。
